@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, X, LayoutGrid, Kanban } from "lucide-react";
+import { Search, X, LayoutGrid, Kanban, Archive } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type JobFiltersProps = {
   viewMode: "grid" | "kanban";
@@ -49,22 +50,30 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
     router.push(`${pathname}?${qs}`, { scroll: false });
   };
 
+  const showArchived = searchParams.get("show_archived") === "1";
+  const toggleArchived = () => {
+    const qs = createQueryString({ show_archived: showArchived ? null : "1" });
+    router.push(`${pathname}?${qs}`, { scroll: false });
+  };
+
   const hasFilters =
     searchParams.has("search") ||
     searchParams.has("status") ||
     searchParams.has("employment_type") ||
-    searchParams.has("workplace_type");
+    searchParams.has("workplace_type") ||
+    searchParams.has("sort") ||
+    searchParams.has("show_archived");
 
   const clearFilters = () => {
     router.push(pathname, { scroll: false });
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-      {/* Search & Filters */}
-      <div className="flex flex-wrap gap-2.5 items-center flex-1">
+    <div className="flex flex-col gap-3">
+      {/* Row 1: Search + filters + reset */}
+      <div className="flex flex-wrap gap-2.5 items-center">
         {/* Search */}
-        <div className="relative flex-1 min-w-56">
+        <div className="relative flex-1 min-w-52">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
             placeholder="Cari posisi atau perusahaan..."
@@ -79,7 +88,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           />
         </div>
 
-        {/* Status filter (hanya muncul di Grid mode) */}
+        {/* Status filter (Grid only) */}
         {viewMode === "grid" && (
           <Select
             value={searchParams.get("status") ?? "all"}
@@ -101,7 +110,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           </Select>
         )}
 
-        {/* Workplace type filter */}
+        {/* Workplace filter */}
         <Select
           value={searchParams.get("workplace_type") ?? "all"}
           onValueChange={(v) => handleFilter("workplace_type", v)}
@@ -135,34 +144,74 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           </SelectContent>
         </Select>
 
+        {/* Sort */}
+        <Select
+          value={searchParams.get("sort") ?? "created_at"}
+          onValueChange={(v) => handleFilter("sort", v)}
+        >
+          <SelectTrigger className="w-36 h-9 text-xs border-border/80 bg-background">
+            <SelectValue placeholder="Urutkan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="created_at">Terbaru ditambahkan</SelectItem>
+            <SelectItem value="applied_at">Terbaru dilamar</SelectItem>
+            <SelectItem value="deadline_at">Deadline terdekat</SelectItem>
+            <SelectItem value="company_name">Nama perusahaan</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Toggle archived */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleArchived}
+          className={cn(
+            "h-9 text-xs gap-1.5 border-border/80",
+            showArchived
+              ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900"
+              : "text-muted-foreground"
+          )}
+        >
+          <Archive className="w-3.5 h-3.5" />
+          {showArchived ? "Sembunyikan Arsip" : "Tampilkan Arsip"}
+        </Button>
+
+        {/* Reset */}
         {hasFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
+          >
             <X className="w-3 h-3" />
             Reset
           </Button>
         )}
       </div>
 
-      {/* Dual View Toggle (Grid vs Kanban) */}
-      <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/80 bg-muted/40 shrink-0 self-end sm:self-auto">
-        <Button
-          variant={viewMode === "grid" ? "secondary" : "ghost"}
-          size="sm"
-          className="h-7 px-2.5 text-xs gap-1.5 shadow-2xs"
-          onClick={() => onViewChange("grid")}
-        >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Grid</span>
-        </Button>
-        <Button
-          variant={viewMode === "kanban" ? "secondary" : "ghost"}
-          size="sm"
-          className="h-7 px-2.5 text-xs gap-1.5 shadow-2xs"
-          onClick={() => onViewChange("kanban")}
-        >
-          <Kanban className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Kanban</span>
-        </Button>
+      {/* Row 2: View mode toggle (right-aligned) */}
+      <div className="flex items-center justify-end">
+        <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/80 bg-muted/40">
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-2.5 text-xs gap-1.5"
+            onClick={() => onViewChange("grid")}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Grid</span>
+          </Button>
+          <Button
+            variant={viewMode === "kanban" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-2.5 text-xs gap-1.5"
+            onClick={() => onViewChange("kanban")}
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Kanban</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

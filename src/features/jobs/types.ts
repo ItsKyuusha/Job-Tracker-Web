@@ -17,7 +17,7 @@ export type JobListItem = Pick<
   | "created_at"
   | "source_name"
 > & {
-  applications: { status: ApplicationStatus; applied_at: string | null }[];
+  applications: { id?: string; status: ApplicationStatus; applied_at: string | null }[];
 };
 
 export type JobFilters = {

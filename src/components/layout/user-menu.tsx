@@ -11,7 +11,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/features/auth/actions";
-import { LogOut, User, ShieldCheck } from "lucide-react";
+import { LogOut, UserRound, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 type UserMenuProps = {
   displayName: string;
@@ -50,9 +51,11 @@ export function UserMenu({ displayName, email, avatarUrl }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="my-1" />
-        <DropdownMenuItem className="gap-2.5 text-xs text-muted-foreground cursor-default py-2" disabled>
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Status: Active User</span>
+        <DropdownMenuItem asChild className="gap-2.5 text-xs cursor-pointer py-2 rounded-md">
+          <Link href="/profile">
+            <UserRound className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>Profil & Keamanan</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="my-1" />
         <DropdownMenuItem

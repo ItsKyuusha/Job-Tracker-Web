@@ -5,16 +5,26 @@ import type { JobListItem } from "@/features/jobs/types";
 import { JobFilters } from "./job-filters";
 import { JobCard } from "./job-card";
 import { KanbanBoard } from "./kanban-board";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { BriefcaseIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 type JobsContainerProps = {
   jobs: JobListItem[];
+  totalItems: number;
+  currentPage: number;
+  pageSize: number;
   hasSearchOrFilter: boolean;
 };
 
-export function JobsContainer({ jobs, hasSearchOrFilter }: JobsContainerProps) {
+export function JobsContainer({
+  jobs,
+  totalItems,
+  currentPage,
+  pageSize,
+  hasSearchOrFilter,
+}: JobsContainerProps) {
   const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
 
   return (
@@ -42,12 +52,20 @@ export function JobsContainer({ jobs, hasSearchOrFilter }: JobsContainerProps) {
           )}
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+          <PaginationBar
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+          />
+        </>
       ) : (
+        // Kanban: tampilkan semua, tidak perlu pagination per kolom
         <KanbanBoard jobs={jobs} />
       )}
     </div>
