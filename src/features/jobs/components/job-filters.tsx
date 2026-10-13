@@ -69,13 +69,13 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 p-1.5 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
-      {/* Sisi Kiri: Search Input */}
-      <div className="relative flex-1 min-w-[200px] lg:max-w-xs">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+      {/* 1. Search Bar (Fleksibel, mepet ke filter) */}
+      <div className="relative flex-1 min-w-[220px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         <Input
-          placeholder="Cari posisi atau perusahaan..."
-          className="pl-9 h-8.5 text-xs border-border/80 bg-background/90 rounded-xl"
+          placeholder="Cari posisi atau nama perusahaan..."
+          className="pl-9 h-9 text-xs border-border/80 bg-background/90 rounded-xl"
           defaultValue={searchParams.get("search") ?? ""}
           onChange={(e) => {
             const val = e.target.value;
@@ -86,16 +86,16 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
         />
       </div>
 
-      {/* Sisi Tengah: Dropdowns Filter (Satu Baris Horisontal) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none flex-wrap sm:flex-nowrap">
-        {/* Status (Hanya saat Grid Mode) */}
+      {/* 2. Group Filter Dropdowns (Mepet & Rapat) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none shrink-0">
+        {/* Status (Hanya muncul saat Grid Mode) */}
         {viewMode === "grid" && (
-          <div className="w-28 shrink-0">
+          <div className="w-32 shrink-0">
             <Select
               value={searchParams.get("status") ?? "all"}
               onValueChange={(v) => handleFilter("status", v)}
             >
-              <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+              <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -118,7 +118,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
             value={searchParams.get("workplace_type") ?? "all"}
             onValueChange={(v) => handleFilter("workplace_type", v)}
           >
-            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
               <SelectValue placeholder="Tempat" />
             </SelectTrigger>
             <SelectContent>
@@ -130,13 +130,13 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           </Select>
         </div>
 
-        {/* Tipe Pekerjaan */}
+        {/* Employment Type */}
         <div className="w-28 shrink-0">
           <Select
             value={searchParams.get("employment_type") ?? "all"}
             onValueChange={(v) => handleFilter("employment_type", v)}
           >
-            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
               <SelectValue placeholder="Tipe" />
             </SelectTrigger>
             <SelectContent>
@@ -156,7 +156,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
             value={searchParams.get("sort") ?? "created_at"}
             onValueChange={(v) => handleFilter("sort", v)}
           >
-            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
               <SelectValue placeholder="Urutkan" />
             </SelectTrigger>
             <SelectContent>
@@ -168,13 +168,13 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           </Select>
         </div>
 
-        {/* Toggle Archived Button */}
+        {/* Toggle Archived */}
         <Button
           variant="outline"
           size="sm"
           onClick={toggleArchived}
           className={cn(
-            "h-8.5 text-xs gap-1.5 border-border/80 rounded-xl shrink-0 font-medium",
+            "h-9 text-xs gap-1.5 border-border/80 rounded-xl shrink-0 font-medium px-2.5",
             showArchived
               ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
               : "text-muted-foreground hover:text-foreground"
@@ -184,13 +184,14 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           <span>{showArchived ? "Arsip: ON" : "Arsip"}</span>
         </Button>
 
-        {/* Reset Filter Button */}
+        {/* Reset */}
         {hasFilters && (
           <Button
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="h-8.5 text-xs gap-1 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl shrink-0 font-medium"
+            className="h-9 text-xs gap-1 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl shrink-0 font-medium px-2"
+            title="Reset semua filter"
           >
             <X className="w-3.5 h-3.5" />
             <span>Reset</span>
@@ -198,13 +199,16 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
         )}
       </div>
 
-      {/* Sisi Kanan: View Switcher (Grid / Kanban) Dalam Baris yang Sama */}
-      <div className="flex items-center gap-1 p-1 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end lg:self-auto">
+      {/* 3. Divider Halus */}
+      <div className="hidden md:block w-px h-6 bg-border/80 shrink-0 mx-0.5" />
+
+      {/* 4. View Switcher (Grid / Kanban) Mepet di Ujung Kanan */}
+      <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end md:self-auto">
         <Button
           variant={viewMode === "grid" ? "secondary" : "ghost"}
           size="sm"
           className={cn(
-            "h-7 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            "h-7.5 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
             viewMode === "grid" && "bg-card text-foreground shadow-2xs font-bold"
           )}
           onClick={() => onViewChange("grid")}
@@ -216,7 +220,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           variant={viewMode === "kanban" ? "secondary" : "ghost"}
           size="sm"
           className={cn(
-            "h-7 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            "h-7.5 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
             viewMode === "kanban" && "bg-card text-foreground shadow-2xs font-bold"
           )}
           onClick={() => onViewChange("kanban")}

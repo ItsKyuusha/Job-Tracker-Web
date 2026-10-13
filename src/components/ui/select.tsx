@@ -47,7 +47,6 @@ export function Select({
     (val: string, label: React.ReactNode) => {
       if (!optionsMapRef.current.has(val)) {
         optionsMapRef.current.set(val, label);
-        // Force sync sekali agar SelectValue bisa menampilkan label saat inisialisasi
         setTick((t) => t + 1);
       }
     },
@@ -86,7 +85,6 @@ export function Select({
     };
   }, [open]);
 
-  // Convert map ke list options
   const options = React.useMemo(() => {
     return Array.from(optionsMapRef.current.entries()).map(([value, label]) => ({
       value,
@@ -132,7 +130,8 @@ export function SelectTrigger({
         context.setOpen((prev) => !prev);
       }}
       className={cn(
-        "flex h-8.5 w-full items-center justify-between rounded-xl border border-input bg-background/90 px-3 py-1.5 text-xs text-foreground shadow-2xs transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer select-none",
+        "flex h-9 w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-1.5 text-xs text-foreground shadow-2xs transition-all hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none",
+        context.open && "ring-1 ring-ring border-ring",
         className
       )}
       {...props}
@@ -140,8 +139,8 @@ export function SelectTrigger({
       <span className="truncate">{children}</span>
       <ChevronDown
         className={cn(
-          "h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1.5 transition-transform duration-150",
-          context.open && "rotate-180"
+          "h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1.5 transition-transform duration-200",
+          context.open && "rotate-180 text-foreground"
         )}
       />
     </button>
@@ -159,7 +158,7 @@ export function SelectValue({
   const currentOption = context.options.find((o) => o.value === context.value);
 
   return (
-    <span className={cn("truncate", !currentOption && "text-muted-foreground")}>
+    <span className={cn("truncate font-medium", !currentOption && "text-muted-foreground font-normal")}>
       {currentOption ? currentOption.label : placeholder || ""}
     </span>
   );
@@ -176,7 +175,7 @@ export function SelectContent({
   return (
     <div
       className={cn(
-        "absolute left-0 right-0 z-50 mt-1 max-h-60 min-w-[8rem] overflow-y-auto rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 backdrop-blur-md",
+        "absolute left-0 z-50 mt-1.5 max-h-64 min-w-[160px] w-max overflow-y-auto rounded-xl border border-border bg-popover/95 p-1 text-popover-foreground shadow-xl shadow-black/10 backdrop-blur-md animate-in fade-in-0 zoom-in-95",
         className
       )}
       {...props}
@@ -197,7 +196,6 @@ export function SelectItem({
   const context = React.useContext(SelectContext);
   if (!context) return null;
 
-  // Daftarkan opsi sekali saat mount
   React.useEffect(() => {
     context.registerOption(value, children);
   }, [value, context.registerOption]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -211,14 +209,14 @@ export function SelectItem({
         context.onValueChange(value);
       }}
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg px-2.5 py-1.5 text-xs outline-hidden transition-colors hover:bg-muted hover:text-foreground",
-        isSelected && "bg-muted/80 font-bold text-foreground",
+        "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg px-2.5 py-2 text-xs outline-hidden transition-colors hover:bg-muted hover:text-foreground",
+        isSelected && "bg-secondary text-secondary-foreground font-semibold",
         className
       )}
       {...props}
     >
-      <span className="truncate">{children}</span>
-      {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-2 shrink-0" />}
+      <span className="truncate pr-2">{children}</span>
+      {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
     </div>
   );
 }
