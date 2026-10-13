@@ -69,149 +69,161 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Row 1: Search + filters + reset */}
-      <div className="flex flex-wrap gap-2.5 items-center">
-        {/* Search */}
-        <div className="relative flex-1 min-w-52">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Cari posisi atau perusahaan..."
-            className="pl-9 h-9 text-xs border-border/80 bg-background"
-            defaultValue={searchParams.get("search") ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              const win = window as unknown as Record<string, ReturnType<typeof setTimeout>>;
-              clearTimeout(win._searchTimeout);
-              win._searchTimeout = setTimeout(() => handleSearch(val), 350);
-            }}
-          />
-        </div>
+    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 p-1.5 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+      {/* Sisi Kiri: Search Input */}
+      <div className="relative flex-1 min-w-[200px] lg:max-w-xs">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Cari posisi atau perusahaan..."
+          className="pl-9 h-8.5 text-xs border-border/80 bg-background/90 rounded-xl"
+          defaultValue={searchParams.get("search") ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            const win = window as unknown as Record<string, ReturnType<typeof setTimeout>>;
+            clearTimeout(win._searchTimeout);
+            win._searchTimeout = setTimeout(() => handleSearch(val), 350);
+          }}
+        />
+      </div>
 
-        {/* Status filter (Grid only) */}
+      {/* Sisi Tengah: Dropdowns Filter (Satu Baris Horisontal) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none flex-wrap sm:flex-nowrap">
+        {/* Status (Hanya saat Grid Mode) */}
         {viewMode === "grid" && (
-          <Select
-            value={searchParams.get("status") ?? "all"}
-            onValueChange={(v) => handleFilter("status", v)}
-          >
-            <SelectTrigger className="w-32 h-9 text-xs border-border/80 bg-background">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="saved">Tersimpan</SelectItem>
-              <SelectItem value="applied">Terkirim</SelectItem>
-              <SelectItem value="assessment">Assessment</SelectItem>
-              <SelectItem value="interview">Interview</SelectItem>
-              <SelectItem value="offer">Penawaran</SelectItem>
-              <SelectItem value="rejected">Ditolak</SelectItem>
-              <SelectItem value="withdrawn">Dibatalkan</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="w-28 shrink-0">
+            <Select
+              value={searchParams.get("status") ?? "all"}
+              onValueChange={(v) => handleFilter("status", v)}
+            >
+              <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="saved">Tersimpan</SelectItem>
+                <SelectItem value="applied">Terkirim</SelectItem>
+                <SelectItem value="assessment">Assessment</SelectItem>
+                <SelectItem value="interview">Interview</SelectItem>
+                <SelectItem value="offer">Penawaran</SelectItem>
+                <SelectItem value="rejected">Ditolak</SelectItem>
+                <SelectItem value="withdrawn">Dibatalkan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
-        {/* Workplace filter */}
-        <Select
-          value={searchParams.get("workplace_type") ?? "all"}
-          onValueChange={(v) => handleFilter("workplace_type", v)}
-        >
-          <SelectTrigger className="w-28 h-9 text-xs border-border/80 bg-background">
-            <SelectValue placeholder="Tempat" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Tempat</SelectItem>
-            <SelectItem value="onsite">On-site</SelectItem>
-            <SelectItem value="remote">Remote</SelectItem>
-            <SelectItem value="hybrid">Hybrid</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Workplace */}
+        <div className="w-28 shrink-0">
+          <Select
+            value={searchParams.get("workplace_type") ?? "all"}
+            onValueChange={(v) => handleFilter("workplace_type", v)}
+          >
+            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+              <SelectValue placeholder="Tempat" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Tempat</SelectItem>
+              <SelectItem value="onsite">On-site</SelectItem>
+              <SelectItem value="remote">Remote</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Employment type filter */}
-        <Select
-          value={searchParams.get("employment_type") ?? "all"}
-          onValueChange={(v) => handleFilter("employment_type", v)}
-        >
-          <SelectTrigger className="w-28 h-9 text-xs border-border/80 bg-background">
-            <SelectValue placeholder="Tipe" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Tipe</SelectItem>
-            <SelectItem value="full_time">Full-time</SelectItem>
-            <SelectItem value="part_time">Part-time</SelectItem>
-            <SelectItem value="contract">Kontrak</SelectItem>
-            <SelectItem value="freelance">Freelance</SelectItem>
-            <SelectItem value="internship">Magang</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Tipe Pekerjaan */}
+        <div className="w-28 shrink-0">
+          <Select
+            value={searchParams.get("employment_type") ?? "all"}
+            onValueChange={(v) => handleFilter("employment_type", v)}
+          >
+            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+              <SelectValue placeholder="Tipe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Tipe</SelectItem>
+              <SelectItem value="full_time">Full-time</SelectItem>
+              <SelectItem value="part_time">Part-time</SelectItem>
+              <SelectItem value="contract">Kontrak</SelectItem>
+              <SelectItem value="freelance">Freelance</SelectItem>
+              <SelectItem value="internship">Magang</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Sort */}
-        <Select
-          value={searchParams.get("sort") ?? "created_at"}
-          onValueChange={(v) => handleFilter("sort", v)}
-        >
-          <SelectTrigger className="w-36 h-9 text-xs border-border/80 bg-background">
-            <SelectValue placeholder="Urutkan" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="created_at">Terbaru ditambahkan</SelectItem>
-            <SelectItem value="applied_at">Terbaru dilamar</SelectItem>
-            <SelectItem value="deadline_at">Deadline terdekat</SelectItem>
-            <SelectItem value="company_name">Nama perusahaan</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="w-36 shrink-0">
+          <Select
+            value={searchParams.get("sort") ?? "created_at"}
+            onValueChange={(v) => handleFilter("sort", v)}
+          >
+            <SelectTrigger className="h-8.5 text-xs border-border/80 bg-background/90 rounded-xl">
+              <SelectValue placeholder="Urutkan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Terbaru dibuat</SelectItem>
+              <SelectItem value="applied_at">Terbaru dilamar</SelectItem>
+              <SelectItem value="deadline_at">Deadline terdekat</SelectItem>
+              <SelectItem value="company_name">Perusahaan A-Z</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Toggle archived */}
+        {/* Toggle Archived Button */}
         <Button
           variant="outline"
           size="sm"
           onClick={toggleArchived}
           className={cn(
-            "h-9 text-xs gap-1.5 border-border/80",
+            "h-8.5 text-xs gap-1.5 border-border/80 rounded-xl shrink-0 font-medium",
             showArchived
-              ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900"
-              : "text-muted-foreground"
+              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           <Archive className="w-3.5 h-3.5" />
-          {showArchived ? "Sembunyikan Arsip" : "Tampilkan Arsip"}
+          <span>{showArchived ? "Arsip: ON" : "Arsip"}</span>
         </Button>
 
-        {/* Reset */}
+        {/* Reset Filter Button */}
         {hasFilters && (
           <Button
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            className="h-8.5 text-xs gap-1 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl shrink-0 font-medium"
           >
-            <X className="w-3 h-3" />
-            Reset
+            <X className="w-3.5 h-3.5" />
+            <span>Reset</span>
           </Button>
         )}
       </div>
 
-      {/* Row 2: View mode toggle (right-aligned) */}
-      <div className="flex items-center justify-end">
-        <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/80 bg-muted/40">
-          <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="sm"
-            className="h-7 px-2.5 text-xs gap-1.5"
-            onClick={() => onViewChange("grid")}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Grid</span>
-          </Button>
-          <Button
-            variant={viewMode === "kanban" ? "secondary" : "ghost"}
-            size="sm"
-            className="h-7 px-2.5 text-xs gap-1.5"
-            onClick={() => onViewChange("kanban")}
-          >
-            <Kanban className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Kanban</span>
-          </Button>
-        </div>
+      {/* Sisi Kanan: View Switcher (Grid / Kanban) Dalam Baris yang Sama */}
+      <div className="flex items-center gap-1 p-1 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end lg:self-auto">
+        <Button
+          variant={viewMode === "grid" ? "secondary" : "ghost"}
+          size="sm"
+          className={cn(
+            "h-7 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            viewMode === "grid" && "bg-card text-foreground shadow-2xs font-bold"
+          )}
+          onClick={() => onViewChange("grid")}
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-indigo-500" />
+          <span className="hidden sm:inline">Grid</span>
+        </Button>
+        <Button
+          variant={viewMode === "kanban" ? "secondary" : "ghost"}
+          size="sm"
+          className={cn(
+            "h-7 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            viewMode === "kanban" && "bg-card text-foreground shadow-2xs font-bold"
+          )}
+          onClick={() => onViewChange("kanban")}
+        >
+          <Kanban className="w-3.5 h-3.5 text-indigo-500" />
+          <span className="hidden sm:inline">Kanban</span>
+        </Button>
       </div>
     </div>
   );
