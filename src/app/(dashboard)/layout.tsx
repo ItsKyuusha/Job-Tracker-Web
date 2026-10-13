@@ -1,6 +1,9 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 
+// Dashboard routes selalu dynamic karena memerlukan auth
+export const dynamic = "force-dynamic";
+
 export default function DashboardLayout({
   children,
 }: {
