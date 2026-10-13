@@ -36,7 +36,7 @@ application_events→ Riwayat perubahan status (audit log, append-only)
 ### 1. Clone dan install dependencies
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ItsKyuusha/Job-Tracker-Web.git
 cd job-tracker-web
 npm install
 ```
