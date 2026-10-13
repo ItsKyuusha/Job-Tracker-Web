@@ -3,21 +3,40 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, X, LayoutGrid, Kanban, Archive } from "lucide-react";
+import { Search, X, LayoutGrid, Kanban, Archive, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type JobFiltersProps = {
   viewMode: "grid" | "kanban";
   onViewChange: (mode: "grid" | "kanban") => void;
 };
+
+// Styled Select Native yang tidak akan pernah terpotong/ke-hide oleh overflow apapun
+function FilterSelect({
+  value,
+  onChange,
+  children,
+  className,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative shrink-0", className)}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full h-9 appearance-none rounded-xl border border-border/80 bg-background/90 pl-3 pr-8 text-xs font-medium text-foreground shadow-2xs transition-colors hover:bg-muted/50 focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer"
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground shrink-0" />
+    </div>
+  );
+}
 
 export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   const router = useRouter();
@@ -69,9 +88,9 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
-      {/* 1. Search Bar (Fleksibel, mepet ke filter) */}
-      <div className="relative flex-1 min-w-[220px]">
+    <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 p-1.5 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+      {/* 1. Search Bar (Fleksibel memanjang) */}
+      <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         <Input
           placeholder="Cari posisi atau nama perusahaan..."
@@ -86,87 +105,63 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
         />
       </div>
 
-      {/* 2. Group Filter Dropdowns (Mepet & Rapat) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none shrink-0">
-        {/* Status (Hanya muncul saat Grid Mode) */}
+      {/* 2. Group Filter Dropdowns (Satu Baris, Tanpa Overflow Clipping) */}
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 shrink-0">
+        {/* Status (Hanya saat Grid Mode) */}
         {viewMode === "grid" && (
-          <div className="w-32 shrink-0">
-            <Select
-              value={searchParams.get("status") ?? "all"}
-              onValueChange={(v) => handleFilter("status", v)}
-            >
-              <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value="saved">Tersimpan</SelectItem>
-                <SelectItem value="applied">Terkirim</SelectItem>
-                <SelectItem value="assessment">Assessment</SelectItem>
-                <SelectItem value="interview">Interview</SelectItem>
-                <SelectItem value="offer">Penawaran</SelectItem>
-                <SelectItem value="rejected">Ditolak</SelectItem>
-                <SelectItem value="withdrawn">Dibatalkan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <FilterSelect
+            value={searchParams.get("status") ?? "all"}
+            onChange={(v) => handleFilter("status", v)}
+            className="w-32"
+          >
+            <option value="all">Semua Status</option>
+            <option value="saved">Tersimpan</option>
+            <option value="applied">Terkirim</option>
+            <option value="assessment">Assessment</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Penawaran</option>
+            <option value="rejected">Ditolak</option>
+            <option value="withdrawn">Dibatalkan</option>
+          </FilterSelect>
         )}
 
         {/* Workplace */}
-        <div className="w-28 shrink-0">
-          <Select
-            value={searchParams.get("workplace_type") ?? "all"}
-            onValueChange={(v) => handleFilter("workplace_type", v)}
-          >
-            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
-              <SelectValue placeholder="Tempat" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Tempat</SelectItem>
-              <SelectItem value="onsite">On-site</SelectItem>
-              <SelectItem value="remote">Remote</SelectItem>
-              <SelectItem value="hybrid">Hybrid</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          value={searchParams.get("workplace_type") ?? "all"}
+          onChange={(v) => handleFilter("workplace_type", v)}
+          className="w-28"
+        >
+          <option value="all">Semua Tempat</option>
+          <option value="onsite">On-site</option>
+          <option value="remote">Remote</option>
+          <option value="hybrid">Hybrid</option>
+        </FilterSelect>
 
         {/* Employment Type */}
-        <div className="w-28 shrink-0">
-          <Select
-            value={searchParams.get("employment_type") ?? "all"}
-            onValueChange={(v) => handleFilter("employment_type", v)}
-          >
-            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
-              <SelectValue placeholder="Tipe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Tipe</SelectItem>
-              <SelectItem value="full_time">Full-time</SelectItem>
-              <SelectItem value="part_time">Part-time</SelectItem>
-              <SelectItem value="contract">Kontrak</SelectItem>
-              <SelectItem value="freelance">Freelance</SelectItem>
-              <SelectItem value="internship">Magang</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          value={searchParams.get("employment_type") ?? "all"}
+          onChange={(v) => handleFilter("employment_type", v)}
+          className="w-28"
+        >
+          <option value="all">Semua Tipe</option>
+          <option value="full_time">Full-time</option>
+          <option value="part_time">Part-time</option>
+          <option value="contract">Kontrak</option>
+          <option value="freelance">Freelance</option>
+          <option value="internship">Magang</option>
+        </FilterSelect>
 
         {/* Sort */}
-        <div className="w-36 shrink-0">
-          <Select
-            value={searchParams.get("sort") ?? "created_at"}
-            onValueChange={(v) => handleFilter("sort", v)}
-          >
-            <SelectTrigger className="h-9 text-xs border-border/80 bg-background/90 rounded-xl">
-              <SelectValue placeholder="Urutkan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at">Terbaru dibuat</SelectItem>
-              <SelectItem value="applied_at">Terbaru dilamar</SelectItem>
-              <SelectItem value="deadline_at">Deadline terdekat</SelectItem>
-              <SelectItem value="company_name">Perusahaan A-Z</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          value={searchParams.get("sort") ?? "created_at"}
+          onChange={(v) => handleFilter("sort", v)}
+          className="w-36"
+        >
+          <option value="created_at">Terbaru dibuat</option>
+          <option value="applied_at">Terbaru dilamar</option>
+          <option value="deadline_at">Deadline terdekat</option>
+          <option value="company_name">Perusahaan A-Z</option>
+        </FilterSelect>
 
         {/* Toggle Archived */}
         <Button
@@ -174,7 +169,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           size="sm"
           onClick={toggleArchived}
           className={cn(
-            "h-9 text-xs gap-1.5 border-border/80 rounded-xl shrink-0 font-medium px-2.5",
+            "h-9 text-xs gap-1.5 border-border/80 rounded-xl shrink-0 font-medium px-3",
             showArchived
               ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
               : "text-muted-foreground hover:text-foreground"
@@ -200,10 +195,10 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
       </div>
 
       {/* 3. Divider Halus */}
-      <div className="hidden md:block w-px h-6 bg-border/80 shrink-0 mx-0.5" />
+      <div className="hidden lg:block w-px h-6 bg-border/80 shrink-0 mx-0.5" />
 
-      {/* 4. View Switcher (Grid / Kanban) Mepet di Ujung Kanan */}
-      <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end md:self-auto">
+      {/* 4. View Switcher (Grid / Kanban) Dalam Baris yang Sama */}
+      <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end lg:self-auto">
         <Button
           variant={viewMode === "grid" ? "secondary" : "ghost"}
           size="sm"
