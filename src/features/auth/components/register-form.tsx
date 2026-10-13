@@ -63,7 +63,7 @@ export function RegisterForm() {
 
           <Button
             type="submit"
-            className="w-full h-9 text-xs font-semibold gap-2 mt-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-950 transition-all shadow-xs"
+            className="w-full h-9 text-xs font-semibold gap-2 mt-2 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white transition-all shadow-sm shadow-indigo-600/25 border-0"
             disabled={pending}
           >
             {pending ? (

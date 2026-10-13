@@ -131,7 +131,7 @@ export function ApplicationStatus({
             type="submit"
             size="sm"
             disabled={pending}
-            className="w-full h-8 text-xs font-semibold gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-950 transition-all shadow-xs"
+            className="w-full h-8 text-xs font-semibold gap-1.5 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white transition-all shadow-sm shadow-indigo-600/20 border-0"
           >
             {pending ? (
               <>

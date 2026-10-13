@@ -30,6 +30,7 @@ import {
   ExternalLink,
   Archive,
   Banknote,
+  Building2,
 } from "lucide-react";
 
 type PageParams = Promise<{ id: string }>;
@@ -93,17 +94,17 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Top Bar: Back & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="icon" asChild className="h-9 w-9 text-muted-foreground hover:text-foreground">
             <Link href="/jobs">
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </Link>
           </Button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <div
-              className={`w-10 h-10 rounded-xl bg-linear-to-br ${gradientClass} text-white flex items-center justify-center font-bold text-base shadow-xs`}
+              className={`w-11 h-11 rounded-xl bg-linear-to-br ${gradientClass} text-white flex items-center justify-center font-bold text-base shadow-md shadow-indigo-500/10`}
             >
               {initial}
             </div>
@@ -111,22 +112,25 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
               <div className="flex items-center gap-2">
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">{job.title}</h1>
                 {!job.is_active && (
-                  <Badge variant="secondary" className="gap-1 text-[10px] bg-muted">
+                  <Badge variant="secondary" className="gap-1 text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                     <Archive className="w-3 h-3" />
-                    Diarsipkan
+                    Arsip
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground font-medium">{job.company_name}</p>
+              <p className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5 mt-0.5">
+                <Building2 className="w-3 h-3 text-indigo-500" />
+                {job.company_name}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {application && <StatusBadge status={application.status} />}
-          <div className="w-px h-4 bg-border mx-1" />
+          <div className="w-px h-4 bg-border/80 mx-1" />
           <ArchiveJobButton jobId={job.id} isActive={job.is_active} />
-          <Button variant="outline" size="sm" asChild className="h-8 text-xs gap-1.5 border-border/80">
+          <Button variant="outline" size="sm" asChild className="h-8 text-xs gap-1.5">
             <Link href={`/jobs/${job.id}/edit`}>
               <Pencil className="w-3.5 h-3.5" />
               <span>Edit</span>
@@ -144,49 +148,57 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
         {/* Left Column (2 Cols): Detail Info, Requirements, Notes */}
         <div className="lg:col-span-2 space-y-6">
           {/* Metadata Highlights */}
-          <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+          <Card className="border border-border/80 bg-card/70 backdrop-blur-md">
             <CardHeader className="pb-3 border-b border-border/40">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Ringkasan Lowongan
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 grid sm:grid-cols-2 gap-4">
               {job.location && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <MapPin className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Lokasi</span>
-                    <span className="font-medium text-foreground">{job.location}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">Lokasi</span>
+                    <span className="font-bold text-foreground">{job.location}</span>
                   </div>
                 </div>
               )}
 
               {job.workplace_type && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Monitor className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    <Monitor className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Tipe Tempat</span>
-                    <span className="font-medium text-foreground">{WORKPLACE_TYPE_LABELS[job.workplace_type]}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">Tipe Tempat</span>
+                    <span className="font-bold text-foreground">{WORKPLACE_TYPE_LABELS[job.workplace_type]}</span>
                   </div>
                 </div>
               )}
 
               {job.employment_type && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Briefcase className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <Briefcase className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Sistem Kerja</span>
-                    <span className="font-medium text-foreground">{EMPLOYMENT_TYPE_LABELS[job.employment_type]}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">Sistem Kerja</span>
+                    <span className="font-bold text-foreground">{EMPLOYMENT_TYPE_LABELS[job.employment_type]}</span>
                   </div>
                 </div>
               )}
 
               {(job.salary_min || job.salary_max) && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Banknote className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <Banknote className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Rentang Gaji</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block">Rentang Gaji</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300">
                       {formatSalary(job.salary_min, job.salary_max, job.currency)}
                     </span>
                   </div>
@@ -194,21 +206,25 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
               )}
 
               {job.posted_at && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40">
+                  <div className="p-2 rounded-lg bg-muted text-muted-foreground">
+                    <Calendar className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Tanggal Publikasi</span>
-                    <span className="font-medium text-foreground">{formatDate(job.posted_at)}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">Tanggal Publikasi</span>
+                    <span className="font-bold text-foreground">{formatDate(job.posted_at)}</span>
                   </div>
                 </div>
               )}
 
               {job.deadline_at && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <CalendarClock className="w-4 h-4 text-amber-500 shrink-0" />
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <CalendarClock className="w-4 h-4" />
+                  </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Batas Waktu Lowongan</span>
-                    <span className="font-medium text-foreground">{formatDate(job.deadline_at)}</span>
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block">Batas Waktu Lamaran</span>
+                    <span className="font-bold text-foreground">{formatDate(job.deadline_at)}</span>
                   </div>
                 </div>
               )}
@@ -216,9 +232,9 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
           </Card>
 
           {/* Job Description & Requirements */}
-          <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+          <Card className="border border-border/80 bg-card/70 backdrop-blur-md">
             <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Deskripsi & Persyaratan Pekerjaan
               </CardTitle>
               {job.source_url && (
@@ -226,7 +242,7 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
                   href={job.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline underline-offset-4"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   <span>Buka Lowongan Asli</span>
                   <ExternalLink className="w-3.5 h-3.5" />

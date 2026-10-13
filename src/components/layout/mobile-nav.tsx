@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-links";
-import { Menu, Sparkles, Plus } from "lucide-react";
+import { Menu, Zap, Plus } from "lucide-react";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -19,40 +19,40 @@ export function MobileNav() {
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden h-8 w-8 text-muted-foreground"
+          className="lg:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
           aria-label="Buka menu navigasi"
         >
-          <Menu className="w-4 h-4" />
+          <Menu className="w-5 h-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-sidebar border-sidebar-border">
-        <SheetHeader className="px-5 h-14 border-b border-sidebar-border flex justify-center">
-          <SheetTitle className="flex items-center gap-2.5 text-left">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm">
-              <Sparkles className="w-4 h-4" />
+      <SheetContent side="left" className="w-72 p-0 bg-sidebar border-sidebar-border">
+        <SheetHeader className="px-5 h-16 border-b border-sidebar-border flex justify-center">
+          <SheetTitle className="flex items-center gap-3 text-left">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 text-white shadow-sm">
+              <Zap className="w-4 h-4 fill-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm tracking-tight text-foreground">CareerSync</span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5 font-medium">Job Tracker Pro</span>
+              <span className="font-bold text-sm tracking-tight text-foreground">CareerSync</span>
+              <span className="text-[10px] text-muted-foreground font-medium">Job Tracker Pro</span>
             </div>
           </SheetTitle>
         </SheetHeader>
 
-        <div className="p-3">
+        <div className="p-4">
           <Button
             asChild
             size="sm"
             onClick={() => setOpen(false)}
-            className="w-full justify-start gap-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs h-9 font-medium"
+            className="w-full justify-start gap-2 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs h-9 shadow-sm shadow-indigo-600/20 border-0"
           >
             <Link href="/jobs/new">
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               <span>Tambah Lowongan</span>
             </Link>
           </Button>
         </div>
 
-        <nav className="px-3 py-2 space-y-1">
+        <nav className="px-3 py-1 space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -65,17 +65,24 @@ export function MobileNav() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors",
+                  "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
                 )}
               >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="w-4 h-4 shrink-0" />
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={cn(
+                      "w-4 h-4 shrink-0",
+                      isActive ? "text-indigo-600 dark:text-indigo-400" : ""
+                    )}
+                  />
                   <span>{item.label}</span>
                 </div>
-                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                )}
               </Link>
             );
           })}

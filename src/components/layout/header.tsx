@@ -23,21 +23,23 @@ export async function Header() {
   const displayName = profile?.full_name ?? user?.email?.split("@")[0] ?? "Pengguna";
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 h-14 border-b border-border/80 bg-background/80 backdrop-blur-md lg:px-8">
-      {/* Mobile nav toggle */}
+    <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 h-16 border-b border-border/80 bg-background/80 backdrop-blur-md transition-colors">
+      {/* Left info & mobile toggle */}
       <div className="flex items-center gap-3">
         <MobileNav />
-        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Workspace</span>
-          <span>/</span>
-          <span>Personal Tracker</span>
+        <div className="hidden sm:flex items-center gap-2 text-xs">
+          <span className="font-semibold text-foreground">Workspace</span>
+          <span className="text-muted-foreground/60">/</span>
+          <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium text-[11px]">
+            Career Tracker
+          </span>
         </div>
       </div>
 
       {/* Right Actions: Theme Toggle + User Menu */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 sm:gap-3">
         <ThemeToggle />
-        <div className="w-px h-4 bg-border mx-1" />
+        <div className="w-px h-4 bg-border/80" />
         {user && (
           <UserMenu
             displayName={displayName}

@@ -262,7 +262,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
         <Button
           type="submit"
           disabled={pending}
-          className="h-9 text-xs font-semibold px-5 gap-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-950 transition-all shadow-xs"
+          className="h-10 text-xs font-bold px-6 gap-2 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white transition-all shadow-md shadow-indigo-600/25 border-0 cursor-pointer"
         >
           {pending ? (
             <>

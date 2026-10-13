@@ -59,7 +59,7 @@ export function ChangePasswordForm() {
               type="submit"
               size="sm"
               disabled={pending}
-              className="h-8 text-xs font-semibold gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs"
+              className="h-8 text-xs font-semibold gap-1.5 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-sm shadow-indigo-600/20 border-0"
             >
               {pending ? (
                 <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Mengubah...</>
