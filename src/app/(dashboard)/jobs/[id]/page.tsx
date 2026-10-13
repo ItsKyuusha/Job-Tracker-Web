@@ -5,18 +5,18 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { DeleteJobButton } from "@/features/jobs/components/delete-job-button";
 import { ArchiveJobButton } from "@/features/jobs/components/archive-job-button";
 import { ApplicationStatus } from "@/features/applications/components/application-status";
 import { ApplicationHistory } from "@/features/applications/components/application-history";
+import { StatusStepper } from "@/features/applications/components/status-stepper";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  APPLICATION_STATUS_LABELS,
-  APPLICATION_STATUS_COLORS,
   EMPLOYMENT_TYPE_LABELS,
   WORKPLACE_TYPE_LABELS,
   formatDate,
   formatSalary,
+  getCompanyGradient,
 } from "@/lib/utils";
 import type { Job, Application, ApplicationEvent } from "@/types/database";
 import {
@@ -47,9 +47,9 @@ export async function generateMetadata({
     .eq("id", id)
     .single();
 
-  if (!data) return { title: "Lowongan — Job Tracker" };
+  if (!data) return { title: "Detail Lowongan — CareerSync" };
   const job = data as unknown as Pick<Job, "title" | "company_name">;
-  return { title: `${job.title} di ${job.company_name} — Job Tracker` };
+  return { title: `${job.title} di ${job.company_name} — CareerSync` };
 }
 
 export default async function JobDetailPage({ params }: { params: PageParams }) {
@@ -87,130 +87,183 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
 
   const events = (rawEvents ?? []) as unknown as ApplicationEvent[];
 
+  const initial = job.company_name?.charAt(0)?.toUpperCase() || "J";
+  const gradientClass = getCompanyGradient(job.company_name);
+
   return (
-    <div className="space-y-6 max-w-2xl">
-      {/* Back + Actions */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Top Bar: Back & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-muted-foreground hover:text-foreground">
             <Link href="/jobs">
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </Link>
           </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold">{job.title}</h1>
-              {!job.is_active && (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  <Archive className="w-3 h-3" />
-                  Diarsipkan
-                </Badge>
-              )}
+
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-xl bg-linear-to-br ${gradientClass} text-white flex items-center justify-center font-bold text-base shadow-xs`}
+            >
+              {initial}
             </div>
-            <p className="text-sm text-muted-foreground">{job.company_name}</p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">{job.title}</h1>
+                {!job.is_active && (
+                  <Badge variant="secondary" className="gap-1 text-[10px] bg-muted">
+                    <Archive className="w-3 h-3" />
+                    Diarsipkan
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">{job.company_name}</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {application && <StatusBadge status={application.status} />}
+          <div className="w-px h-4 bg-border mx-1" />
           <ArchiveJobButton jobId={job.id} isActive={job.is_active} />
-          <Button variant="outline" size="sm" asChild className="gap-2">
+          <Button variant="outline" size="sm" asChild className="h-8 text-xs gap-1.5 border-border/80">
             <Link href={`/jobs/${job.id}/edit`}>
-              <Pencil className="w-4 h-4" />
-              Edit
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit</span>
             </Link>
           </Button>
           <DeleteJobButton jobId={job.id} jobTitle={job.title} />
         </div>
       </div>
 
-      {/* Application Status */}
-      {application && (
-        <ApplicationStatus
-          applicationId={application.id}
-          currentStatus={application.status}
-          appliedAt={application.applied_at}
-          deadlineAt={application.deadline_at}
-          notes={application.notes}
-        />
-      )}
+      {/* Visual Step Pipeline */}
+      {application && <StatusStepper currentStatus={application.status} />}
 
-      {/* Job Info */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Informasi Lowongan
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {job.location && (
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>{job.location}</span>
-            </div>
-          )}
-          {job.employment_type && (
-            <div className="flex items-center gap-2 text-sm">
-              <Briefcase className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>{EMPLOYMENT_TYPE_LABELS[job.employment_type]}</span>
-            </div>
-          )}
-          {job.workplace_type && (
-            <div className="flex items-center gap-2 text-sm">
-              <Monitor className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>{WORKPLACE_TYPE_LABELS[job.workplace_type]}</span>
-            </div>
-          )}
-          {(job.salary_min || job.salary_max) && (
-            <div className="flex items-center gap-2 text-sm">
-              <Banknote className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>{formatSalary(job.salary_min, job.salary_max, job.currency)}</span>
-            </div>
-          )}
-          {job.posted_at && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>Diposting {formatDate(job.posted_at)}</span>
-            </div>
-          )}
-          {job.deadline_at && (
-            <div className="flex items-center gap-2 text-sm">
-              <CalendarClock className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>Deadline {formatDate(job.deadline_at)}</span>
-            </div>
-          )}
-          {job.source_url && (
-            <div className="flex items-center gap-2 text-sm">
-              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-              <a
-                href={job.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline truncate"
-              >
-                Lihat lowongan asli
-              </a>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Split Grid Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Column (2 Cols): Detail Info, Requirements, Notes */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Metadata Highlights */}
+          <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+            <CardHeader className="pb-3 border-b border-border/40">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Ringkasan Lowongan
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 grid sm:grid-cols-2 gap-4">
+              {job.location && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Lokasi</span>
+                    <span className="font-medium text-foreground">{job.location}</span>
+                  </div>
+                </div>
+              )}
 
-      {/* Description */}
-      {job.description && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Deskripsi / Catatan
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{job.description}</p>
-          </CardContent>
-        </Card>
-      )}
+              {job.workplace_type && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <Monitor className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Tipe Tempat</span>
+                    <span className="font-medium text-foreground">{WORKPLACE_TYPE_LABELS[job.workplace_type]}</span>
+                  </div>
+                </div>
+              )}
 
-      {/* Application History */}
-      {application && events.length > 0 && (
-        <ApplicationHistory events={events} />
-      )}
+              {job.employment_type && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <Briefcase className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Sistem Kerja</span>
+                    <span className="font-medium text-foreground">{EMPLOYMENT_TYPE_LABELS[job.employment_type]}</span>
+                  </div>
+                </div>
+              )}
+
+              {(job.salary_min || job.salary_max) && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <Banknote className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Rentang Gaji</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                      {formatSalary(job.salary_min, job.salary_max, job.currency)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {job.posted_at && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Tanggal Publikasi</span>
+                    <span className="font-medium text-foreground">{formatDate(job.posted_at)}</span>
+                  </div>
+                </div>
+              )}
+
+              {job.deadline_at && (
+                <div className="flex items-center gap-2.5 text-xs">
+                  <CalendarClock className="w-4 h-4 text-amber-500 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">Batas Waktu Lowongan</span>
+                    <span className="font-medium text-foreground">{formatDate(job.deadline_at)}</span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Job Description & Requirements */}
+          <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+            <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Deskripsi & Persyaratan Pekerjaan
+              </CardTitle>
+              {job.source_url && (
+                <a
+                  href={job.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline underline-offset-4"
+                >
+                  <span>Buka Lowongan Asli</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </CardHeader>
+            <CardContent className="pt-4">
+              {job.description ? (
+                <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-foreground">
+                  {job.description}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  Belum ada catatan deskripsi atau rincian kualifikasi pekerjaan.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column (1 Col): Quick Status Updater & History */}
+        <div className="space-y-6">
+          {application && (
+            <ApplicationStatus
+              applicationId={application.id}
+              currentStatus={application.status}
+              appliedAt={application.applied_at}
+              deadlineAt={application.deadline_at}
+              notes={application.notes}
+            />
+          )}
+
+          {application && events.length > 0 && (
+            <ApplicationHistory events={events} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

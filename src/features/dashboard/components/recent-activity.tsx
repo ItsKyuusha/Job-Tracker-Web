@@ -1,68 +1,66 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS, formatRelativeDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatRelativeDate } from "@/lib/utils";
 import type { ApplicationStatus } from "@/types/database";
-import { Activity } from "lucide-react";
+import { Activity, Plus, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type ActivityItem = {
   status: ApplicationStatus;
   updated_at: string;
-  jobs: { title: string; company_name: string } | null;
+  jobs: { id?: string; title: string; company_name: string } | null;
 };
 
 export function RecentActivity({ activities }: { activities: ActivityItem[] }) {
   if (activities.length === 0) {
     return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Aktivitas Terbaru
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+        <CardHeader className="pb-3 border-b border-border/40">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <Activity className="w-4 h-4 text-primary" />
+            <span>Aktivitas Terbaru</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-sm text-muted-foreground">Belum ada aktivitas.</p>
-            <Link
-              href="/jobs/new"
-              className="text-sm font-medium hover:underline mt-2"
-            >
-              Tambah lowongan pertama
+        <CardContent className="py-10 text-center space-y-3">
+          <p className="text-xs text-muted-foreground">Belum ada aktivitas lamaran yang tercatat.</p>
+          <Button asChild size="sm" variant="outline" className="text-xs h-8">
+            <Link href="/jobs/new">
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              Catat Lowongan Pertama
             </Link>
-          </div>
+          </Button>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <Activity className="w-4 h-4" />
-          Aktivitas Terbaru
+    <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+      <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          <span>Aktivitas Terbaru</span>
         </CardTitle>
+        <Link href="/jobs" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 font-medium transition-colors">
+          <span>Lihat Semua</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </Link>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="divide-y divide-border/40 p-0">
         {activities.map((item, i) => (
-          <div key={i} className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium truncate">
+          <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+            <div className="min-w-0 pr-3">
+              <p className="text-xs font-semibold text-foreground truncate">
                 {item.jobs?.title ?? "—"}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                 {item.jobs?.company_name ?? "—"}
               </p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <Badge
-                variant="secondary"
-                className={`text-xs ${APPLICATION_STATUS_COLORS[item.status]}`}
-              >
-                {APPLICATION_STATUS_LABELS[item.status]}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
+              <StatusBadge status={item.status} />
+              <span className="text-[10px] text-muted-foreground">
                 {formatRelativeDate(item.updated_at)}
               </span>
             </div>

@@ -11,7 +11,7 @@ import { ChevronLeft } from "lucide-react";
 type PageParams = Promise<{ id: string }>;
 
 export const metadata: Metadata = {
-  title: "Edit Lowongan — Job Tracker",
+  title: "Edit Informasi Lowongan — CareerSync",
 };
 
 export default async function EditJobPage({ params }: { params: PageParams }) {
@@ -31,22 +31,20 @@ export default async function EditJobPage({ params }: { params: PageParams }) {
   if (!rawJob) notFound();
 
   const job = rawJob as unknown as Job;
-
-  // Bind jobId ke action
   const updateAction = updateJobAction.bind(null, id);
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
+    <div className="space-y-6 max-w-3xl mx-auto pb-12">
+      <div className="flex items-center gap-3 pb-3 border-b border-border/60">
+        <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-muted-foreground hover:text-foreground">
           <Link href={`/jobs/${id}`}>
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Edit Lowongan</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {job.title} di {job.company_name}
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Edit Informasi Lowongan</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Perbarui data {job.title} di {job.company_name}
           </p>
         </div>
       </div>
@@ -54,7 +52,7 @@ export default async function EditJobPage({ params }: { params: PageParams }) {
       <JobForm
         action={updateAction}
         defaultValues={job}
-        submitLabel="Perbarui Lowongan"
+        submitLabel="Perbarui Data Lowongan"
       />
     </div>
   );

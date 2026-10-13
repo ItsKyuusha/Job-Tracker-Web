@@ -11,9 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, LayoutGrid, Kanban } from "lucide-react";
 
-export function JobFilters() {
+type JobFiltersProps = {
+  viewMode: "grid" | "kanban";
+  onViewChange: (mode: "grid" | "kanban") => void;
+};
+
+export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -28,7 +33,6 @@ export function JobFilters() {
           params.set(key, value);
         }
       });
-      // Reset page saat filter berubah
       params.delete("page");
       return params.toString();
     },
@@ -56,84 +60,110 @@ export function JobFilters() {
   };
 
   return (
-    <div className="flex flex-wrap gap-3 items-center">
-      {/* Search */}
-      <div className="relative flex-1 min-w-48">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Cari posisi atau perusahaan..."
-          className="pl-9"
-          defaultValue={searchParams.get("search") ?? ""}
-          onChange={(e) => {
-            // Debounce sederhana via timeout
-            const val = e.target.value;
-            clearTimeout((window as unknown as Record<string, ReturnType<typeof setTimeout>>)._searchTimeout);
-            (window as unknown as Record<string, ReturnType<typeof setTimeout>>)._searchTimeout = setTimeout(() => handleSearch(val), 400);
-          }}
-        />
+    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+      {/* Search & Filters */}
+      <div className="flex flex-wrap gap-2.5 items-center flex-1">
+        {/* Search */}
+        <div className="relative flex-1 min-w-56">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Cari posisi atau perusahaan..."
+            className="pl-9 h-9 text-xs border-border/80 bg-background"
+            defaultValue={searchParams.get("search") ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              const win = window as unknown as Record<string, ReturnType<typeof setTimeout>>;
+              clearTimeout(win._searchTimeout);
+              win._searchTimeout = setTimeout(() => handleSearch(val), 350);
+            }}
+          />
+        </div>
+
+        {/* Status filter (hanya muncul di Grid mode) */}
+        {viewMode === "grid" && (
+          <Select
+            value={searchParams.get("status") ?? "all"}
+            onValueChange={(v) => handleFilter("status", v)}
+          >
+            <SelectTrigger className="w-32 h-9 text-xs border-border/80 bg-background">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Status</SelectItem>
+              <SelectItem value="saved">Tersimpan</SelectItem>
+              <SelectItem value="applied">Terkirim</SelectItem>
+              <SelectItem value="assessment">Assessment</SelectItem>
+              <SelectItem value="interview">Interview</SelectItem>
+              <SelectItem value="offer">Penawaran</SelectItem>
+              <SelectItem value="rejected">Ditolak</SelectItem>
+              <SelectItem value="withdrawn">Dibatalkan</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Workplace type filter */}
+        <Select
+          value={searchParams.get("workplace_type") ?? "all"}
+          onValueChange={(v) => handleFilter("workplace_type", v)}
+        >
+          <SelectTrigger className="w-28 h-9 text-xs border-border/80 bg-background">
+            <SelectValue placeholder="Tempat" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Tempat</SelectItem>
+            <SelectItem value="onsite">On-site</SelectItem>
+            <SelectItem value="remote">Remote</SelectItem>
+            <SelectItem value="hybrid">Hybrid</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Employment type filter */}
+        <Select
+          value={searchParams.get("employment_type") ?? "all"}
+          onValueChange={(v) => handleFilter("employment_type", v)}
+        >
+          <SelectTrigger className="w-28 h-9 text-xs border-border/80 bg-background">
+            <SelectValue placeholder="Tipe" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Tipe</SelectItem>
+            <SelectItem value="full_time">Full-time</SelectItem>
+            <SelectItem value="part_time">Part-time</SelectItem>
+            <SelectItem value="contract">Kontrak</SelectItem>
+            <SelectItem value="freelance">Freelance</SelectItem>
+            <SelectItem value="internship">Magang</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground">
+            <X className="w-3 h-3" />
+            Reset
+          </Button>
+        )}
       </div>
 
-      {/* Status filter */}
-      <Select
-        value={searchParams.get("status") ?? "all"}
-        onValueChange={(v) => handleFilter("status", v)}
-      >
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Status</SelectItem>
-          <SelectItem value="saved">Saved</SelectItem>
-          <SelectItem value="applied">Applied</SelectItem>
-          <SelectItem value="assessment">Assessment</SelectItem>
-          <SelectItem value="interview">Interview</SelectItem>
-          <SelectItem value="offer">Offer</SelectItem>
-          <SelectItem value="rejected">Rejected</SelectItem>
-          <SelectItem value="withdrawn">Withdrawn</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Employment type filter */}
-      <Select
-        value={searchParams.get("employment_type") ?? "all"}
-        onValueChange={(v) => handleFilter("employment_type", v)}
-      >
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder="Tipe" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Tipe</SelectItem>
-          <SelectItem value="full_time">Full-time</SelectItem>
-          <SelectItem value="part_time">Part-time</SelectItem>
-          <SelectItem value="contract">Contract</SelectItem>
-          <SelectItem value="freelance">Freelance</SelectItem>
-          <SelectItem value="internship">Internship</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Workplace type filter */}
-      <Select
-        value={searchParams.get("workplace_type") ?? "all"}
-        onValueChange={(v) => handleFilter("workplace_type", v)}
-      >
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder="Tempat" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Tempat</SelectItem>
-          <SelectItem value="onsite">On-site</SelectItem>
-          <SelectItem value="remote">Remote</SelectItem>
-          <SelectItem value="hybrid">Hybrid</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Clear filters */}
-      {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
-          <X className="w-3.5 h-3.5" />
-          Reset
+      {/* Dual View Toggle (Grid vs Kanban) */}
+      <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/80 bg-muted/40 shrink-0 self-end sm:self-auto">
+        <Button
+          variant={viewMode === "grid" ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 px-2.5 text-xs gap-1.5 shadow-2xs"
+          onClick={() => onViewChange("grid")}
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Grid</span>
         </Button>
-      )}
+        <Button
+          variant={viewMode === "kanban" ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 px-2.5 text-xs gap-1.5 shadow-2xs"
+          onClick={() => onViewChange("kanban")}
+        >
+          <Kanban className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Kanban</span>
+        </Button>
+      </div>
     </div>
   );
 }
