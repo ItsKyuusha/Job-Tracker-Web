@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Briefcase,
+  Layers,
   Building2,
   MessageSquareText,
   UserRound,
@@ -24,6 +25,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Lowongan Saya",
     href: "/jobs",
     icon: Briefcase,
+  },
+  {
+    label: "Loker Gabungan",
+    href: "/explore/all",
+    icon: Layers,
+    badge: "Combine",
   },
   {
     label: "Portal Karir",

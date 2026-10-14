@@ -3,18 +3,17 @@
 import { useState } from "react";
 import { ScrapedJob, ScraperSource, ScrapeSuccessResponse } from "../types";
 import { ScrapedJobCard } from "./scraped-job-card";
+import { ExploreTabs } from "./explore-tabs";
 import {
   Search,
   MapPin,
   Sparkles,
   Loader2,
-  SlidersHorizontal,
   Compass,
   AlertCircle,
-  RefreshCw,
-  ExternalLink,
   Layers,
-  ArrowRight,
+  Building2,
+  MessageSquareText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,21 +21,21 @@ import { toast } from "sonner";
 
 const SCRAPER_API_URL = process.env.NEXT_PUBLIC_SCRAPER_API_URL || "http://localhost:3001";
 
-const ALL_SOURCES: { id: ScraperSource; label: string; color: string }[] = [
-  { id: "linkedin", label: "LinkedIn", color: "bg-blue-500" },
-  { id: "jobstreet", label: "JobStreet", color: "bg-purple-500" },
-  { id: "glints", label: "Glints", color: "bg-rose-500" },
-  { id: "threads", label: "Threads", color: "bg-emerald-500" },
+const ALL_SOURCES: { id: ScraperSource; label: string; color: string; type: "portal" | "social" }[] = [
+  { id: "jobstreet", label: "JobStreet", color: "bg-purple-500", type: "portal" },
+  { id: "glints", label: "Glints", color: "bg-rose-500", type: "portal" },
+  { id: "threads", label: "Threads", color: "bg-emerald-500", type: "social" },
+  { id: "linkedin", label: "LinkedIn", color: "bg-blue-500", type: "social" },
 ];
 
 export function JobExplorer() {
   const [keyword, setKeyword] = useState("Frontend Developer");
   const [location, setLocation] = useState("Jakarta");
   const [selectedSources, setSelectedSources] = useState<ScraperSource[]>([
-    "linkedin",
     "jobstreet",
     "glints",
     "threads",
+    "linkedin",
   ]);
 
   const [loading, setLoading] = useState(false);
@@ -59,6 +58,16 @@ export function JobExplorer() {
       }
       return [...prev, sourceId];
     });
+  };
+
+  const selectGroup = (group: "all" | "portals" | "social") => {
+    if (group === "all") {
+      setSelectedSources(["jobstreet", "glints", "threads", "linkedin"]);
+    } else if (group === "portals") {
+      setSelectedSources(["jobstreet", "glints"]);
+    } else if (group === "social") {
+      setSelectedSources(["threads", "linkedin"]);
+    }
   };
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -99,8 +108,8 @@ export function JobExplorer() {
       setResults(data.results || []);
       setDuration(data.duration_ms);
 
-      toast.success("Scraping berhasil!", {
-        description: `Ditemukan ${data.total} lowongan dari ${selectedSources.length} sumber.`,
+      toast.success("Scraping gabungan berhasil!", {
+        description: `Ditemukan ${data.total} lowongan dari ${selectedSources.length} sumber platform.`,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -121,26 +130,28 @@ export function JobExplorer() {
 
   return (
     <div className="space-y-6">
+      {/* ─── Top Switcher Tab ─── */}
+      <ExploreTabs />
+
       {/* ─── Hero Header Banner ─── */}
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-linear-to-r from-indigo-950 via-slate-900 to-[#080A14] p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20">
-        <div className="absolute -top-24 -right-12 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-2xl border border-cyan-500/20 bg-linear-to-r from-slate-950 via-indigo-950 to-[#080A14] p-6 sm:p-8 text-white shadow-xl shadow-cyan-950/20">
+        <div className="absolute -top-24 -right-12 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-[11px] font-semibold backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-            <span>Multi-Source Job Scraper Hub</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-[11px] font-semibold backdrop-blur-md">
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Mode Gabungan: Semua Platform & Sosmed</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-            Eksplorasi Lowongan dari Berbagai Platform
+            Eksplorasi Lowongan Lintas Sumber (All-in-One)
           </h1>
 
           <p className="text-xs sm:text-sm text-indigo-100/80 leading-relaxed font-normal">
-            Cari lowongan langsung dari <strong className="text-white">LinkedIn</strong>,{" "}
-            <strong className="text-white">JobStreet</strong>,{" "}
-            <strong className="text-white">Glints</strong>, dan{" "}
-            <strong className="text-white">Threads</strong> secara live melalui Scraper Service terpisah.
+            Bandingkan lowongan kerja resmi dari <strong className="text-white">JobStreet</strong> dan{" "}
+            <strong className="text-white">Glints</strong> dengan postingan informal langsung dari{" "}
+            <strong className="text-white">Threads</strong> dan <strong className="text-white">LinkedIn</strong> dalam satu feed terpadu.
           </p>
         </div>
       </div>
@@ -178,7 +189,7 @@ export function JobExplorer() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 text-xs font-semibold gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-600/30 border-0"
+                className="w-full h-10 text-xs font-semibold gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm shadow-cyan-600/30 border-0"
               >
                 {loading ? (
                   <>
@@ -188,18 +199,18 @@ export function JobExplorer() {
                 ) : (
                   <>
                     <Compass className="w-4 h-4" />
-                    <span>Cari Loker</span>
+                    <span>Cari Semua</span>
                   </>
                 )}
               </Button>
             </div>
           </div>
 
-          {/* Sources Checkbox Toggles */}
-          <div className="flex items-center justify-between gap-3 flex-wrap pt-1 border-t border-border/60">
+          {/* Sources Checkbox Toggles & Quick Preset */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-muted-foreground font-medium mr-1.5">
-                Target Platform:
+                Sumber Aktif:
               </span>
               {ALL_SOURCES.map((s) => {
                 const isSelected = selectedSources.includes(s.id);
@@ -210,7 +221,7 @@ export function JobExplorer() {
                     onClick={() => toggleSource(s.id)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-300 shadow-2xs"
+                        ? "bg-cyan-50 border-cyan-300 text-cyan-800 dark:bg-cyan-950/60 dark:border-cyan-700 dark:text-cyan-300 shadow-2xs"
                         : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -223,9 +234,32 @@ export function JobExplorer() {
               })}
             </div>
 
-            <div className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Service: {SCRAPER_API_URL}</span>
+            {/* Preset shortcuts */}
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span>Preset:</span>
+              <button
+                type="button"
+                onClick={() => selectGroup("all")}
+                className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground font-medium cursor-pointer"
+              >
+                Semua
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => selectGroup("portals")}
+                className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground font-medium cursor-pointer"
+              >
+                Hanya Portal
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => selectGroup("social")}
+                className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground font-medium cursor-pointer"
+              >
+                Hanya Sosmed
+              </button>
             </div>
           </div>
         </form>
@@ -236,7 +270,7 @@ export function JobExplorer() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <span className="font-semibold text-foreground">{results.length} lowongan</span>
-            <span>ditemukan</span>
+            <span>ditemukan dari {selectedSources.length} platform</span>
             {duration && (
               <span className="text-[11px] font-mono text-muted-foreground/60">
                 ({(duration / 1000).toFixed(1)} detik)
@@ -246,7 +280,7 @@ export function JobExplorer() {
 
           {/* Source Filter Tabs */}
           {results.length > 0 && (
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/60">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/60 flex-wrap">
               <button
                 type="button"
                 onClick={() => setFilterSource("all")}
@@ -304,13 +338,13 @@ export function JobExplorer() {
       {/* ─── Job Cards Grid ─── */}
       {loading ? (
         <div className="p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-600 dark:text-cyan-400" />
           <div className="space-y-1">
             <p className="font-semibold text-sm text-foreground">
-              Sedang mengambil data lowongan...
+              Sedang mengambil data gabungan dari semua sumber...
             </p>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Scraper service sedang memindai LinkedIn, JobStreet, Glints, dan Threads secara simultan. Proses ini memakan waktu beberapa detik.
+              Memindai JobStreet, Glints, Threads, dan LinkedIn secara berurutan. Proses memakan waktu beberapa detik.
             </p>
           </div>
         </div>
@@ -333,15 +367,15 @@ export function JobExplorer() {
       ) : (
         /* Initial Empty State Banner */
         <div className="p-10 rounded-2xl border border-border/60 bg-muted/10 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto">
-            <Compass className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mx-auto">
+            <Layers className="w-6 h-6" />
           </div>
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-foreground">
-              Mulai Penjelajahan Lowongan Eksternal
+              Mulai Penjelajahan Lowongan Semua Sumber Sekaligus
             </h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Ketik posisi impianmu di atas dan klik &ldquo;Cari Loker&rdquo; untuk menarik feed pekerjaan langsung dari empat platform sekaligus.
+              Ketik posisi impianmu di atas dan klik &ldquo;Cari Semua&rdquo; untuk menarik feed pekerjaan gabungan dari JobStreet, Glints, Threads, dan LinkedIn dalam satu tampilan.
             </p>
           </div>
         </div>
