@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "./user-menu";
-import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { SidebarTrigger } from "./sidebar-trigger";
 import type { Profile } from "@/types/database";
 import Link from "next/link";
 import { Zap } from "lucide-react";
@@ -26,15 +26,11 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-3.5 sm:px-6 h-16 border-b border-border/80 bg-background/80 backdrop-blur-md transition-colors">
-      {/* Left: Mobile Toggle & Branding */}
+      {/* Left: Mobile Sidebar Trigger & Brand / Breadcrumb */}
       <div className="flex items-center gap-2.5 sm:gap-3">
-        <MobileNav
-          displayName={displayName}
-          email={user?.email ?? ""}
-          avatarUrl={profile?.avatar_url ?? null}
-        />
+        <SidebarTrigger />
 
-        {/* Mobile-only brand identifier */}
+        {/* Mobile-only brand logo */}
         <Link
           href="/dashboard"
           className="flex lg:hidden items-center gap-2 group"
