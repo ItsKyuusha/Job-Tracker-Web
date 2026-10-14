@@ -1,0 +1,351 @@
+"use client";
+
+import { useState } from "react";
+import { ScrapedJob, ScraperSource, ScrapeSuccessResponse } from "../types";
+import { ScrapedJobCard } from "./scraped-job-card";
+import {
+  Search,
+  MapPin,
+  Sparkles,
+  Loader2,
+  SlidersHorizontal,
+  Compass,
+  AlertCircle,
+  RefreshCw,
+  ExternalLink,
+  Layers,
+  ArrowRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+
+const SCRAPER_API_URL = process.env.NEXT_PUBLIC_SCRAPER_API_URL || "http://localhost:3001";
+
+const ALL_SOURCES: { id: ScraperSource; label: string; color: string }[] = [
+  { id: "linkedin", label: "LinkedIn", color: "bg-blue-500" },
+  { id: "jobstreet", label: "JobStreet", color: "bg-purple-500" },
+  { id: "glints", label: "Glints", color: "bg-rose-500" },
+  { id: "threads", label: "Threads", color: "bg-emerald-500" },
+];
+
+export function JobExplorer() {
+  const [keyword, setKeyword] = useState("Frontend Developer");
+  const [location, setLocation] = useState("Jakarta");
+  const [selectedSources, setSelectedSources] = useState<ScraperSource[]>([
+    "linkedin",
+    "jobstreet",
+    "glints",
+    "threads",
+  ]);
+
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<ScrapedJob[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Filter state for displayed cards
+  const [filterSource, setFilterSource] = useState<string>("all");
+
+  const toggleSource = (sourceId: ScraperSource) => {
+    setSelectedSources((prev) => {
+      if (prev.includes(sourceId)) {
+        if (prev.length === 1) {
+          toast.error("Minimal satu sumber harus dipilih");
+          return prev;
+        }
+        return prev.filter((s) => s !== sourceId);
+      }
+      return [...prev, sourceId];
+    });
+  };
+
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!keyword.trim()) {
+      toast.error("Masukkan kata kunci posisi pekerjaan");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+    setHasSearched(true);
+
+    try {
+      const sourcesParam =
+        selectedSources.length === ALL_SOURCES.length ? "all" : selectedSources.join(",");
+      const url = new URL(`${SCRAPER_API_URL}/api/scrape`);
+      url.searchParams.set("keyword", keyword.trim());
+      if (location.trim()) url.searchParams.set("location", location.trim());
+      url.searchParams.set("sources", sourcesParam);
+      url.searchParams.set("limit", "15");
+
+      const res = await fetch(url.toString(), {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            `Service scraper merespon dengan status ${res.status}. Pastikan job-scraper-service (port 3001) aktif.`
+        );
+      }
+
+      const data = (await res.json()) as ScrapeSuccessResponse;
+      setResults(data.results || []);
+      setDuration(data.duration_ms);
+
+      toast.success("Scraping berhasil!", {
+        description: `Ditemukan ${data.total} lowongan dari ${selectedSources.length} sumber.`,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setErrorMsg(message);
+      setResults([]);
+      toast.error("Gagal melakukan scraping", {
+        description: "Pastikan job-scraper-service sedang berjalan di http://localhost:3001",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayedJobs = results.filter((job) => {
+    if (filterSource === "all") return true;
+    return job.source === filterSource;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Hero Header Banner ─── */}
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-linear-to-r from-indigo-950 via-slate-900 to-[#080A14] p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20">
+        <div className="absolute -top-24 -right-12 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-[11px] font-semibold backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Multi-Source Job Scraper Hub</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+            Eksplorasi Lowongan dari Berbagai Platform
+          </h1>
+
+          <p className="text-xs sm:text-sm text-indigo-100/80 leading-relaxed font-normal">
+            Cari lowongan langsung dari <strong className="text-white">LinkedIn</strong>,{" "}
+            <strong className="text-white">JobStreet</strong>,{" "}
+            <strong className="text-white">Glints</strong>, dan{" "}
+            <strong className="text-white">Threads</strong> secara live melalui Scraper Service terpisah.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── Search & Filter Controls ─── */}
+      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSearch} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+            {/* Keyword Input */}
+            <div className="md:col-span-6 relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="Posisi pekerjaan, cth: Frontend Developer, System Analyst..."
+                className="pl-10 h-10 text-xs rounded-xl"
+              />
+            </div>
+
+            {/* Location Input */}
+            <div className="md:col-span-4 relative">
+              <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Lokasi (cth: Jakarta, Bandung, Remote)..."
+                className="pl-10 h-10 text-xs rounded-xl"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="md:col-span-2">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-10 text-xs font-semibold gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-600/30 border-0"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Scraping...</span>
+                  </>
+                ) : (
+                  <>
+                    <Compass className="w-4 h-4" />
+                    <span>Cari Loker</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Sources Checkbox Toggles */}
+          <div className="flex items-center justify-between gap-3 flex-wrap pt-1 border-t border-border/60">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-muted-foreground font-medium mr-1.5">
+                Target Platform:
+              </span>
+              {ALL_SOURCES.map((s) => {
+                const isSelected = selectedSources.includes(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => toggleSource(s.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-300 shadow-2xs"
+                        : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${isSelected ? s.color : "bg-muted-foreground"}`}
+                    />
+                    <span>{s.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Service: {SCRAPER_API_URL}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {/* ─── Results Toolbar & Chips Filter ─── */}
+      {hasSearched && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="font-semibold text-foreground">{results.length} lowongan</span>
+            <span>ditemukan</span>
+            {duration && (
+              <span className="text-[11px] font-mono text-muted-foreground/60">
+                ({(duration / 1000).toFixed(1)} detik)
+              </span>
+            )}
+          </div>
+
+          {/* Source Filter Tabs */}
+          {results.length > 0 && (
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setFilterSource("all")}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  filterSource === "all"
+                    ? "bg-background text-foreground shadow-2xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Semua ({results.length})
+              </button>
+
+              {ALL_SOURCES.map((s) => {
+                const count = results.filter((j) => j.source === s.id).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setFilterSource(s.id)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                      filterSource === s.id
+                        ? "bg-background text-foreground shadow-2xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s.label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Error Notification ─── */}
+      {errorMsg && (
+        <div className="p-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold">Koneksi ke Scraper Service Gagal</p>
+            <p className="text-[11px] leading-relaxed text-rose-600/90 dark:text-rose-400/90">
+              {errorMsg}
+            </p>
+            <p className="text-[10px] text-muted-foreground pt-1">
+              Jalankan perintah berikut di terminal:{" "}
+              <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground">
+                cd job-scraper-service &amp;&amp; npm run dev
+              </code>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Job Cards Grid ─── */}
+      {loading ? (
+        <div className="p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
+          <div className="space-y-1">
+            <p className="font-semibold text-sm text-foreground">
+              Sedang mengambil data lowongan...
+            </p>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Scraper service sedang memindai LinkedIn, JobStreet, Glints, dan Threads secara simultan. Proses ini memakan waktu beberapa detik.
+            </p>
+          </div>
+        </div>
+      ) : displayedJobs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayedJobs.map((job) => (
+            <ScrapedJobCard key={job.id} job={job} />
+          ))}
+        </div>
+      ) : hasSearched && !errorMsg ? (
+        <div className="p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-2">
+          <Compass className="w-8 h-8 text-muted-foreground mx-auto" />
+          <p className="font-semibold text-sm text-foreground">
+            Tidak ada lowongan yang ditemukan
+          </p>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            Coba variasikan kata kunci posisi atau ubah lokasi pencarian untuk menemukan lebih banyak hasil.
+          </p>
+        </div>
+      ) : (
+        /* Initial Empty State Banner */
+        <div className="p-10 rounded-2xl border border-border/60 bg-muted/10 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto">
+            <Compass className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-bold text-sm text-foreground">
+              Mulai Penjelajahan Lowongan Eksternal
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Ketik posisi impianmu di atas dan klik &ldquo;Cari Loker&rdquo; untuk menarik feed pekerjaan langsung dari empat platform sekaligus.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

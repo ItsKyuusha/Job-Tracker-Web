@@ -164,9 +164,16 @@ export function Sidebar({ displayName, email, avatarUrl }: SidebarProps) {
                       />
                       <span>{item.label}</span>
                     </div>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-xs shadow-indigo-500" />
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {item.badge && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                          {item.badge}
+                        </span>
+                      )}
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-xs shadow-indigo-500" />
+                      )}
+                    </div>
                   </Link>
                 );
               })}
