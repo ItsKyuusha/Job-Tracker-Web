@@ -81,10 +81,10 @@ export function SheetContent({
   children: React.ReactNode;
 }) {
   const context = React.useContext(SheetContext);
-  if (!context || !context.open) return null;
 
-  // Handle escape key to close
+  // Handle escape key to close - must be called unconditionally before any return!
   React.useEffect(() => {
+    if (!context?.open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         context.setOpen(false);
@@ -93,6 +93,8 @@ export function SheetContent({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [context]);
+
+  if (!context || !context.open) return null;
 
   const sideStyles = {
     top: "inset-x-0 top-0 border-b max-h-[85vh]",
