@@ -1,7 +1,8 @@
 import {
   LayoutDashboard,
   Briefcase,
-  Compass,
+  Building2,
+  MessageSquareText,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -25,10 +26,16 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Briefcase,
   },
   {
-    label: "Cari Lowongan",
-    href: "/explore",
-    icon: Compass,
-    badge: "Scraper",
+    label: "Portal Karir",
+    href: "/explore/portals",
+    icon: Building2,
+    badge: "Resmi",
+  },
+  {
+    label: "Loker Sosmed",
+    href: "/explore/social",
+    icon: MessageSquareText,
+    badge: "Sosmed",
   },
   {
     label: "Profil",
