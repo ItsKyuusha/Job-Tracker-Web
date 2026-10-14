@@ -83,25 +83,36 @@ export function SheetContent({
   const context = React.useContext(SheetContext);
   if (!context || !context.open) return null;
 
+  // Handle escape key to close
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        context.setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [context]);
+
   const sideStyles = {
-    top: "inset-x-0 top-0 border-b",
-    bottom: "inset-x-0 bottom-0 border-t",
-    left: "inset-y-0 left-0 h-full border-r",
-    right: "inset-y-0 right-0 h-full border-l",
+    top: "inset-x-0 top-0 border-b max-h-[85vh]",
+    bottom: "inset-x-0 bottom-0 border-t max-h-[85vh]",
+    left: "inset-y-0 left-0 h-full border-r max-w-[85vw]",
+    right: "inset-y-0 right-0 h-full border-l max-w-[85vw]",
   };
 
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in-0"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
         onClick={() => context.setOpen(false)}
       />
 
       {/* Drawer panel */}
       <div
         className={cn(
-          "fixed z-50 flex flex-col bg-background shadow-xl transition ease-in-out duration-300 animate-in",
+          "fixed z-50 flex flex-col bg-background shadow-2xl transition ease-in-out duration-300 overflow-y-auto",
           sideStyles[side],
           className
         )}
@@ -109,7 +120,8 @@ export function SheetContent({
         <button
           type="button"
           onClick={() => context.setOpen(false)}
-          className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 cursor-pointer"
+          className="absolute right-3.5 top-3.5 z-20 w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+          aria-label="Tutup menu"
         >
           <X className="h-4 w-4" />
         </button>

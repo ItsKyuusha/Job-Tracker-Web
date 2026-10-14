@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/features/auth/actions";
-import { LogOut, UserRound, ShieldCheck } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 
 type UserMenuProps = {
