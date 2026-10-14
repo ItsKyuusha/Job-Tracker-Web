@@ -69,7 +69,7 @@ export function PortalExplorer() {
 
     try {
       const sourcesParam = selectedSources.join(",");
-      const url = new URL(`${SCRAPER_API_URL}/api/scrape`);
+      const url = new URL(`${SCRAPER_API_URL}/api/scrape/portals`);
       url.searchParams.set("keyword", keyword.trim());
       if (location.trim()) url.searchParams.set("location", location.trim());
       url.searchParams.set("sources", sourcesParam);

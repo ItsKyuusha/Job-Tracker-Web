@@ -69,7 +69,7 @@ export function SocialExplorer() {
 
     try {
       const sourcesParam = selectedSources.join(",");
-      const url = new URL(`${SCRAPER_API_URL}/api/scrape`);
+      const url = new URL(`${SCRAPER_API_URL}/api/scrape/social`);
       url.searchParams.set("keyword", keyword.trim());
       url.searchParams.set("sources", sourcesParam);
       url.searchParams.set("limit", "20");
