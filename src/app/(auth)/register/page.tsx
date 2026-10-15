@@ -3,79 +3,59 @@ import { AuthSideHero } from "@/features/auth/components/auth-side-hero";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Zap, ShieldCheck, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Daftar Akun — CareerSync Job Tracker",
-  description: "Buat akun CareerSync gratis untuk melacak alur lowongan, interview, dan negosiasi tawaran kerja.",
+  title: "Daftar Akun — CareerSync",
+  description: "Buat akun CareerSync untuk mulai melacak alur lowongan dan interview kerja Anda.",
 };
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen grid lg:grid-cols-12 bg-white text-slate-900 relative selection:bg-[#6545FF] selection:text-white">
-      {/* ─── Left Column (60%): Dark Mode Auth Side Hero ─── */}
-      <div className="lg:col-span-7 xl:col-span-7 hidden lg:block bg-[#080A14]">
-        <AuthSideHero />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A0F1D] relative selection:bg-blue-600 selection:text-white">
+      {/* Background ambient lighting */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ─── Right Column (40%): Light Mode Authentication Form ─── */}
-      <div className="lg:col-span-5 xl:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-14 relative z-10 min-h-screen bg-slate-50/70 border-l border-slate-200/80">
-        {/* Ambient subtle light aura */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-violet-100/60 rounded-full blur-3xl pointer-events-none" />
+      {/* ─── Unified Rounded Dual-Pane Card Container (Expanded Canvas & 2:1 Ratio) ─── */}
+      <div className="relative z-10 w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-700/60 bg-white grid lg:grid-cols-12 min-h-[620px]">
+        {/* Left Pane (67% / 8 cols): Modern Royal Blue Side Hero */}
+        <div className="lg:col-span-8 hidden lg:block">
+          <AuthSideHero />
+        </div>
 
-        {/* Top Header Navigation */}
-        <div className="relative z-10 flex items-center justify-between gap-3 pb-6">
-          {/* Logo Brand */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6545FF] to-[#4F35CC] flex items-center justify-center text-white shadow-md shadow-[#6545FF]/30 transition-transform group-hover:scale-105">
-              <Zap className="w-4 h-4 fill-white" />
-            </div>
-            <div>
-              <span className="text-base font-bold tracking-tight text-slate-900">CareerSync</span>
-              <p className="text-[10px] text-slate-500 font-medium">Job Application Intelligence</p>
-            </div>
-          </Link>
-
-          {/* Right Action: Back link & Theme toggle */}
-          <div className="flex items-center gap-2">
+        {/* Right Pane (33% / 4 cols): Clean Focused Form Pane */}
+        <div className="lg:col-span-4 flex flex-col justify-between p-7 sm:p-9 lg:p-8 xl:p-10 bg-white text-slate-900 border-l border-slate-100">
+          {/* Top Quick Actions (Back & Theme) */}
+          <div className="flex items-center justify-between pb-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-200/60"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors py-1.5 px-3 rounded-xl hover:bg-slate-100"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Beranda</span>
+              <span>Kembali</span>
             </Link>
             <ThemeToggle />
           </div>
-        </div>
 
-        {/* Form Container */}
-        <div className="relative z-10 w-full max-w-md mx-auto my-auto py-6 space-y-6">
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-50 text-[#6545FF] border border-violet-100 text-[11px] font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-              <span>Akses Penuh Tanpa Biaya</span>
+          {/* Form Header & Inputs */}
+          <div className="my-auto space-y-5">
+            <div className="space-y-1.5">
+              <h2 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-slate-900 leading-snug">
+                Create Account
+              </h2>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Daftarkan akun baru untuk mengelola proses rekrutmen kerja dan jadwal wawancara Anda.
+              </p>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Buat Akun CareerSync
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Mulai kelola alur lamaran kerja, persiapan wawancara, dan tawaran karir Anda secara terstruktur.
-            </p>
+            <RegisterForm />
           </div>
 
-          {/* Main Form Component */}
-          <RegisterForm />
-        </div>
-
-        {/* Bottom Security Footer */}
-        <div className="relative z-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500 border-t border-slate-200">
-          <span className="flex items-center gap-1.5 text-slate-600">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>PostgreSQL Row Level Security</span>
-          </span>
-          <span>&copy; {new Date().getFullYear()} CareerSync</span>
+          {/* Bottom Sub-footer */}
+          <div className="pt-3 text-center border-t border-slate-100 text-[11px] text-slate-400">
+            Secure Access • CareerSync System
+          </div>
         </div>
       </div>
     </div>

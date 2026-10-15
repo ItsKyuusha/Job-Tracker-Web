@@ -30,19 +30,20 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: rawApplications }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("applications")
+      .select("status, created_at, updated_at, deadline_at, jobs(id, title, company_name)")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false }),
+  ]);
 
   const userName = profile?.full_name?.split(" ")[0] ?? user.email?.split("@")[0] ?? "Sobat";
-
-  const { data: rawApplications } = await supabase
-    .from("applications")
-    .select("status, created_at, updated_at, deadline_at, jobs(id, title, company_name)")
-    .eq("user_id", user.id)
-    .order("updated_at", { ascending: false });
 
   const applications = (rawApplications ?? []) as unknown as ApplicationRow[];
 

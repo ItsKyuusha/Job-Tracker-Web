@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrapedJob } from "../types";
 import {
   ExternalLink,
@@ -8,22 +8,32 @@ import {
   Check,
   Mail,
   Phone,
-  MessageCircle,
+  Clock,
   MapPin,
-  Sparkles,
-  Share2,
+  BookmarkPlus,
+  BookmarkCheck,
+  Loader2,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatRelativeDate } from "../utils/date";
+import { importScrapedJobAction } from "../actions";
 import { toast } from "sonner";
 
 interface SocialJobCardProps {
   job: ScrapedJob;
+  isSaved?: boolean;
+  onSavedChange?: (url: string) => void;
 }
 
-export function SocialJobCard({ job }: SocialJobCardProps) {
+export function SocialJobCard({ job, isSaved = false, onSavedChange }: SocialJobCardProps) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [saved, setSaved] = useState(isSaved);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setSaved(isSaved);
+  }, [isSaved]);
 
   const isThreads = job.source === "threads";
   const platformName = isThreads ? "Threads" : "LinkedIn";
@@ -41,6 +51,8 @@ export function SocialJobCard({ job }: SocialJobCardProps) {
   const detectedEmail = emailMatch ? emailMatch[0] : null;
   const detectedPhone = phoneMatch ? phoneMatch[0] : null;
 
+  const dateInfo = formatRelativeDate(job.posted_at);
+
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -48,10 +60,37 @@ export function SocialJobCard({ job }: SocialJobCardProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSave = async () => {
+    if (saved || saving) return;
+    setSaving(true);
+    try {
+      const res = await importScrapedJobAction(job);
+      if (res.alreadySaved) {
+        setSaved(true);
+        if (job.source_url) onSavedChange?.(job.source_url);
+        toast.info("Lowongan sudah ada di Kanban!", {
+          description: "Lowongan ini sebelumnya sudah pernah Anda simpan.",
+        });
+      } else if (res.success) {
+        setSaved(true);
+        if (job.source_url) onSavedChange?.(job.source_url);
+        toast.success("Berhasil disimpan ke Kanban!", {
+          description: `${job.title} masuk ke kolom 'Tersimpan'.`,
+        });
+      } else {
+        toast.error(res.error || "Gagal menyimpan lowongan");
+      }
+    } catch {
+      toast.error("Terjadi kesalahan saat menyimpan lowongan.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="group relative rounded-2xl border border-border/80 bg-card p-5 hover:border-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/5 transition-all flex flex-col justify-between gap-4">
       <div className="space-y-3">
-        {/* Top Header: Platform Badge, Poster / Handle */}
+        {/* Top Header: Platform Badge, Poster, and Relative Date */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <span
@@ -67,12 +106,28 @@ export function SocialJobCard({ job }: SocialJobCardProps) {
             </span>
           </div>
 
-          {job.location && (
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-muted-foreground/70" />
-              <span>{job.location}</span>
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {dateInfo && (
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-md"
+                title={dateInfo.formattedDate ? `Diposting: ${dateInfo.formattedDate}` : undefined}
+              >
+                <Clock className="w-3 h-3 text-muted-foreground/70 shrink-0" />
+                <span>{dateInfo.relative}</span>
+                {dateInfo.formattedDate && (
+                  <span className="text-[10px] text-muted-foreground/60 hidden sm:inline">
+                    • {dateInfo.formattedDate}
+                  </span>
+                )}
+              </span>
+            )}
+            {job.location && (
+              <span className="text-[11px] text-muted-foreground hidden sm:flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-muted-foreground/70" />
+                <span>{job.location}</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Post Title / Main Vacancy Heading */}
@@ -131,34 +186,63 @@ export function SocialJobCard({ job }: SocialJobCardProps) {
         </div>
       </div>
 
-      {/* Action Footer: Copy Text & Open Thread / Post */}
-      <div className="pt-2 flex items-center justify-between gap-2 border-t border-border/60">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => handleCopy(postText, "Teks postingan")}
-          className="h-8 text-xs font-medium gap-1.5 text-muted-foreground hover:text-foreground rounded-xl"
-        >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>Salin Teks</span>
-        </Button>
-
-        <Button
-          asChild
-          size="sm"
-          className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs shadow-emerald-600/20 border-0 transition-all rounded-xl"
-        >
-          <a
-            href={job.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center"
+      {/* Action Footer: Copy Text, Save to Kanban, and Open Link */}
+      <div className="pt-2 flex items-center justify-between gap-2 border-t border-border/60 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => handleCopy(postText, "Teks postingan")}
+            className="h-8 text-xs font-medium gap-1.5 text-muted-foreground hover:text-foreground rounded-xl"
           >
-            <span>Buka di {platformName}</span>
-            <ExternalLink className="w-3 h-3 ml-0.5" />
-          </a>
-        </Button>
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>Salin</span>
+          </Button>
+
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground rounded-xl"
+          >
+            <a
+              href={job.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center"
+            >
+              <span>{platformName}</span>
+              <ExternalLink className="w-3 h-3 ml-0.5" />
+            </a>
+          </Button>
+        </div>
+
+        {saved ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled
+            className="h-8 text-xs font-medium gap-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-xl cursor-default"
+          >
+            <BookmarkCheck className="w-3.5 h-3.5" />
+            <span>Tersimpan</span>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+            className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs shadow-emerald-600/20 border-0 transition-all rounded-xl cursor-pointer"
+          >
+            {saving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <BookmarkPlus className="w-3.5 h-3.5" />
+            )}
+            <span>Simpan</span>
+          </Button>
+        )}
       </div>
     </div>
   );

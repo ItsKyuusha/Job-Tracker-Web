@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrapedJob, ScraperSource, ScrapeSuccessResponse } from "../types";
 import { SocialJobCard } from "./social-job-card";
 import { ExploreTabs } from "./explore-tabs";
@@ -13,9 +13,12 @@ import {
   Phone,
   Mail,
   Info,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateFilterOption, DATE_FILTER_OPTIONS, filterJobsByDate, deduplicateJobsClient } from "../utils/date";
+import { getSavedJobUrlsAction } from "../actions";
 import { toast } from "sonner";
 
 const SCRAPER_API_URL = process.env.NEXT_PUBLIC_SCRAPER_API_URL || "http://localhost:3001";
@@ -35,12 +38,29 @@ export function SocialExplorer() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ScrapedJob[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [duration, setDuration] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Filter state for displayed cards
   const [filterSource, setFilterSource] = useState<string>("all");
   const [onlyWithContact, setOnlyWithContact] = useState(false);
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>("all");
+
+  // Track already saved job URLs for duplicate indicators
+  const [savedUrls, setSavedUrls] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    getSavedJobUrlsAction().then((urls) => {
+      setSavedUrls(new Set(urls));
+    });
+  }, []);
+
+  const handleSavedUrl = (url: string) => {
+    setSavedUrls((prev) => new Set([...prev, url]));
+  };
 
   const toggleSource = (sourceId: ScraperSource) => {
     setSelectedSources((prev) => {
@@ -66,6 +86,8 @@ export function SocialExplorer() {
     setLoading(true);
     setErrorMsg(null);
     setHasSearched(true);
+    setPage(1);
+    setHasMore(true);
 
     try {
       const sourcesParam = selectedSources.join(",");
@@ -73,6 +95,7 @@ export function SocialExplorer() {
       url.searchParams.set("keyword", keyword.trim());
       url.searchParams.set("sources", sourcesParam);
       url.searchParams.set("limit", "20");
+      url.searchParams.set("page", "1");
 
       const res = await fetch(url.toString(), {
         method: "GET",
@@ -88,11 +111,12 @@ export function SocialExplorer() {
       }
 
       const data = (await res.json()) as ScrapeSuccessResponse;
-      setResults(data.results || []);
+      const cleanResults = deduplicateJobsClient(data.results || []);
+      setResults(cleanResults);
       setDuration(data.duration_ms);
 
       toast.success("Postingan sosmed berhasil discrape!", {
-        description: `Ditemukan ${data.total} postingan lowongan kerja dari komunitas.`,
+        description: `Ditemukan ${cleanResults.length} postingan lowongan kerja unik dari komunitas.`,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -106,7 +130,58 @@ export function SocialExplorer() {
     }
   };
 
-  const displayedJobs = results.filter((job) => {
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+
+    try {
+      const sourcesParam = selectedSources.join(",");
+      const url = new URL(`${SCRAPER_API_URL}/api/scrape/social`);
+      url.searchParams.set("keyword", keyword.trim());
+      url.searchParams.set("sources", sourcesParam);
+      url.searchParams.set("limit", "20");
+      url.searchParams.set("page", String(nextPage));
+
+      const res = await fetch(url.toString(), {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+
+      if (!res.ok) {
+        toast.error("Gagal mengambil halaman berikutnya dari sosmed.");
+        return;
+      }
+
+      const data = (await res.json()) as ScrapeSuccessResponse;
+      const newItems = data.results || [];
+
+      if (newItems.length === 0) {
+        setHasMore(false);
+        toast.info("Tidak ada lagi postingan baru yang ditemukan di sosmed.");
+      } else {
+        setResults((prev) => {
+          const merged = [...prev, ...newItems];
+          const deduplicated = deduplicateJobsClient(merged);
+          const addedCount = deduplicated.length - prev.length;
+          if (addedCount <= 0) {
+            setHasMore(false);
+            toast.info("Semua postingan dari halaman berikutnya sudah ada di daftar.");
+          } else {
+            toast.success(`Berhasil memuat ${addedCount} postingan baru.`);
+          }
+          return deduplicated;
+        });
+        setPage(nextPage);
+      }
+    } catch {
+      toast.error("Terjadi kendala saat memuat postingan tambahan.");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const baseFiltered = results.filter((job) => {
     if (filterSource !== "all" && job.source !== filterSource) return false;
 
     if (onlyWithContact) {
@@ -118,6 +193,8 @@ export function SocialExplorer() {
 
     return true;
   });
+
+  const displayedJobs = filterJobsByDate(baseFiltered, dateFilter);
 
   return (
     <div className="space-y-6">
@@ -231,9 +308,11 @@ export function SocialExplorer() {
       {/* ─── Results Toolbar & Chips Filter ─── */}
       {hasSearched && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <span className="font-semibold text-foreground">{results.length} postingan</span>
-            <span>ditemukan dari feed komunitas</span>
+          <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
+            <span className="font-semibold text-foreground">
+              {displayedJobs.length} dari {results.length} postingan
+            </span>
+            <span>ditampilkan dari feed komunitas</span>
             {duration && (
               <span className="text-[11px] font-mono text-muted-foreground/60">
                 ({(duration / 1000).toFixed(1)} detik)
@@ -241,39 +320,59 @@ export function SocialExplorer() {
             )}
           </div>
 
-          {/* Source Filter Tabs */}
+          {/* Source & Date Filter Tabs */}
           {results.length > 0 && (
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/60">
-              <button
-                type="button"
-                onClick={() => setFilterSource("all")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  filterSource === "all"
-                    ? "bg-background text-foreground shadow-2xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Semua ({results.length})
-              </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Date Filter Selector */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-muted/60 border border-border/60">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="text-[11px] text-muted-foreground font-medium">Waktu:</span>
+                <select
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value as DateFilterOption)}
+                  className="bg-transparent text-xs font-semibold text-foreground focus:outline-hidden cursor-pointer"
+                >
+                  {DATE_FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id} className="bg-popover text-popover-foreground">
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              {SOCIAL_SOURCES.map((s) => {
-                const count = results.filter((j) => j.source === s.id).length;
-                if (count === 0) return null;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setFilterSource(s.id)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                      filterSource === s.id
-                        ? "bg-background text-foreground shadow-2xs font-semibold"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {s.label} ({count})
-                  </button>
-                );
-              })}
+              {/* Source Filter Tabs */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setFilterSource("all")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    filterSource === "all"
+                      ? "bg-background text-foreground shadow-2xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Semua ({results.length})
+                </button>
+
+                {SOCIAL_SOURCES.map((s) => {
+                  const count = results.filter((j) => j.source === s.id).length;
+                  if (count === 0) return null;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setFilterSource(s.id)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                        filterSource === s.id
+                          ? "bg-background text-foreground shadow-2xs font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {s.label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -312,10 +411,45 @@ export function SocialExplorer() {
           </div>
         </div>
       ) : displayedJobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayedJobs.map((job) => (
-            <SocialJobCard key={job.id} job={job} />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedJobs.map((job) => (
+              <SocialJobCard
+                key={job.id}
+                job={job}
+                isSaved={savedUrls.has(job.source_url)}
+                onSavedChange={handleSavedUrl}
+              />
+            ))}
+          </div>
+
+          {/* Pagination: Load More */}
+          {hasMore && (
+            <div className="flex flex-col items-center justify-center gap-2 pt-4 pb-2 border-t border-border/60">
+              <Button
+                type="button"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                size="lg"
+                className="rounded-2xl px-8 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 gap-2 cursor-pointer transition-all"
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sedang Mengambil Postingan Halaman {page + 1}...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Muat Lebih Banyak Postingan Sosmed (Halaman {page + 1})</span>
+                  </>
+                )}
+              </Button>
+              <p className="text-[11px] text-muted-foreground text-center">
+                Mengambil batch postingan berikutnya dari Threads & LinkedIn dan memfilter duplikat secara otomatis.
+              </p>
+            </div>
+          )}
         </div>
       ) : hasSearched && !errorMsg ? (
         <div className="p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-2">

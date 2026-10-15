@@ -141,7 +141,7 @@ export default async function JobsPage({
 
       {/* Jobs Container — Grid & Kanban view */}
       <JobsContainer
-        jobs={paginatedJobs}
+        jobs={jobs}
         totalItems={totalItems}
         currentPage={currentPage}
         pageSize={PAGE_SIZE}

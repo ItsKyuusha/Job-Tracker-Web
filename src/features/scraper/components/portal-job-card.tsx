@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { ScrapedJob } from "../types";
 import {
   ExternalLink,
@@ -5,17 +8,31 @@ import {
   MapPin,
   DollarSign,
   Clock,
-  Briefcase,
   CheckCircle2,
+  BookmarkPlus,
+  BookmarkCheck,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatRelativeDate } from "../utils/date";
+import { importScrapedJobAction } from "../actions";
+import { toast } from "sonner";
 
 interface PortalJobCardProps {
   job: ScrapedJob;
+  isSaved?: boolean;
+  onSavedChange?: (url: string) => void;
 }
 
-export function PortalJobCard({ job }: PortalJobCardProps) {
+export function PortalJobCard({ job, isSaved = false, onSavedChange }: PortalJobCardProps) {
+  const [saved, setSaved] = useState(isSaved);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setSaved(isSaved);
+  }, [isSaved]);
+
   const isJobStreet = job.source === "jobstreet";
   const portalName = isJobStreet ? "JobStreet" : "Glints";
   const badgeStyle = isJobStreet
@@ -43,10 +60,39 @@ export function PortalJobCard({ job }: PortalJobCardProps) {
       ? "Magang"
       : null;
 
+  const dateInfo = formatRelativeDate(job.posted_at);
+
+  const handleSave = async () => {
+    if (saved || saving) return;
+    setSaving(true);
+    try {
+      const res = await importScrapedJobAction(job);
+      if (res.alreadySaved) {
+        setSaved(true);
+        if (job.source_url) onSavedChange?.(job.source_url);
+        toast.info("Lowongan sudah ada di Kanban!", {
+          description: "Lowongan ini sebelumnya sudah pernah Anda simpan.",
+        });
+      } else if (res.success) {
+        setSaved(true);
+        if (job.source_url) onSavedChange?.(job.source_url);
+        toast.success("Berhasil disimpan ke Kanban!", {
+          description: `${job.title} di ${job.company} masuk ke kolom 'Tersimpan'.`,
+        });
+      } else {
+        toast.error(res.error || "Gagal menyimpan lowongan");
+      }
+    } catch {
+      toast.error("Terjadi kesalahan saat menyimpan lowongan.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="group relative rounded-2xl border border-border/80 bg-card p-5 hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/5 transition-all flex flex-col justify-between gap-4">
       <div className="space-y-3">
-        {/* Top Header: Portal Badge & Tags */}
+        {/* Top Header: Portal Badge, Tags, and Relative Date */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
@@ -69,10 +115,22 @@ export function PortalJobCard({ job }: PortalJobCardProps) {
             )}
           </div>
 
-          <span className="text-[10px] text-muted-foreground/80 flex items-center gap-1 font-mono">
-            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-            <span>Terverifikasi</span>
-          </span>
+          <div className="flex items-center gap-2">
+            {dateInfo && (
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-md"
+                title={dateInfo.formattedDate ? `Diposting: ${dateInfo.formattedDate}` : undefined}
+              >
+                <Clock className="w-3 h-3 text-muted-foreground/70 shrink-0" />
+                <span>{dateInfo.relative}</span>
+                {dateInfo.formattedDate && (
+                  <span className="text-[10px] text-muted-foreground/60 hidden sm:inline">
+                    • {dateInfo.formattedDate}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Position Title & Company Name */}
@@ -115,16 +173,13 @@ export function PortalJobCard({ job }: PortalJobCardProps) {
         )}
       </div>
 
-      {/* Action Footer */}
-      <div className="pt-2 flex items-center justify-between gap-2 border-t border-border/60">
-        <span className="text-[10px] text-muted-foreground/60 font-mono truncate">
-          Ref: {job.id.slice(0, 8)}
-        </span>
-
+      {/* Action Footer: Save to Kanban & Open Source Link */}
+      <div className="pt-2 flex items-center justify-between gap-2 border-t border-border/60 flex-wrap">
         <Button
           asChild
           size="sm"
-          className="h-8 text-xs font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/20 border-0 transition-all rounded-xl"
+          variant="outline"
+          className="h-8 text-xs font-semibold gap-1.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:hover:bg-indigo-950/40 dark:hover:border-indigo-800 transition-colors"
         >
           <a
             href={job.source_url}
@@ -132,10 +187,36 @@ export function PortalJobCard({ job }: PortalJobCardProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center"
           >
-            <span>Lamar di {portalName}</span>
+            <span>Buka di {portalName}</span>
             <ExternalLink className="w-3 h-3 ml-0.5" />
           </a>
         </Button>
+
+        {saved ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled
+            className="h-8 text-xs font-medium gap-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-xl cursor-default"
+          >
+            <BookmarkCheck className="w-3.5 h-3.5" />
+            <span>Tersimpan</span>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+            className="h-8 text-xs font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/20 border-0 transition-all rounded-xl cursor-pointer"
+          >
+            {saving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <BookmarkPlus className="w-3.5 h-3.5" />
+            )}
+            <span>Simpan</span>
+          </Button>
+        )}
       </div>
     </div>
   );

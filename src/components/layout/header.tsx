@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "./user-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { SidebarTrigger } from "./sidebar-trigger";
+import { LiveDateTime } from "./live-datetime";
 import type { Profile } from "@/types/database";
 import Link from "next/link";
 import { Zap } from "lucide-react";
@@ -52,8 +53,9 @@ export async function Header() {
         </div>
       </div>
 
-      {/* Right Actions: Theme Toggle + User Menu */}
+      {/* Right Actions: Live DateTime + Theme Toggle + User Menu */}
       <div className="flex items-center gap-2 sm:gap-3">
+        <LiveDateTime />
         <ThemeToggle />
         <div className="w-px h-4 bg-border/80" />
         {user && (

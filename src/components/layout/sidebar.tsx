@@ -47,8 +47,8 @@ export function Sidebar({ displayName, email, avatarUrl }: SidebarProps) {
         className={cn(
           // Base styles
           "flex flex-col bg-sidebar border-sidebar-border select-none transition-transform duration-300 ease-in-out shrink-0 overflow-y-auto",
-          // Desktop: static left column, persistent, 256px width, full height, right border
-          "lg:static lg:translate-x-0 lg:w-64 lg:min-h-screen lg:border-r lg:z-auto lg:shadow-none",
+          // Desktop: fixed/sticky pinned column, persistent, 256px width, viewport height, top-0, right border
+          "lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:w-64 lg:border-r lg:z-30 lg:shadow-none",
           // Mobile & Tablet: fixed off-canvas overlay drawer, z-50, shadow-2xl, 288px width
           "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full border-r shadow-2xl",
           // Open/Close toggle animation on mobile
@@ -66,12 +66,7 @@ export function Sidebar({ displayName, email, avatarUrl }: SidebarProps) {
               <Zap className="w-4 h-4 fill-white" />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm tracking-tight text-foreground">CareerSync</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">
-                  PRO
-                </span>
-              </div>
+              <span className="font-bold text-sm tracking-tight text-foreground">CareerSync</span>
               <span className="text-[11px] text-muted-foreground font-medium">Job Tracker Suite</span>
             </div>
           </Link>

@@ -54,9 +54,11 @@ export function JobsContainer({
       ) : viewMode === "grid" ? (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
+            {jobs
+              .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+              .map((job) => (
+                <JobCard key={job.id} job={job} />
+              ))}
           </div>
           <PaginationBar
             currentPage={currentPage}
@@ -65,7 +67,7 @@ export function JobsContainer({
           />
         </>
       ) : (
-        // Kanban: tampilkan semua, tidak perlu pagination per kolom
+        // Kanban: tampilkan semua kartu, tidak terpotong slice halaman grid
         <KanbanBoard jobs={jobs} />
       )}
     </div>
