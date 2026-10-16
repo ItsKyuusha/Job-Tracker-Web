@@ -25,6 +25,11 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // Bypass middleware protection for OAuth callback handler
+  if (request.nextUrl.pathname.startsWith("/auth/callback")) {
+    return supabaseResponse;
+  }
+
   // Refresh session agar tidak expired
   const {
     data: { user },

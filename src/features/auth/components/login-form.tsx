@@ -77,17 +77,17 @@ export function LoginForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
       });
       if (error) {
-        toast.info("Login dengan Google", {
-          description: error.message || "Konfigurasi Google OAuth pada dashboard Supabase untuk mengaktifkan login langsung.",
+        toast.error("Login dengan Google gagal", {
+          description: error.message || "Periksa konfigurasi Google Client ID & Secret pada dashboard Supabase Auth.",
         });
       }
     } catch {
-      toast.info("Login dengan Google", {
-        description: "Integrasi SSO Google siap dikonfigurasi pada panel Supabase Auth.",
+      toast.error("Login dengan Google gagal", {
+        description: "Terjadi kesalahan saat memulai sesi OAuth.",
       });
     }
   };
