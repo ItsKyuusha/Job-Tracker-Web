@@ -21,7 +21,8 @@ import { DateFilterOption, DATE_FILTER_OPTIONS, filterJobsByDate, deduplicateJob
 import { getSavedJobUrlsAction } from "../actions";
 import { toast } from "sonner";
 
-const SCRAPER_API_URL = process.env.NEXT_PUBLIC_SCRAPER_API_URL || "http://localhost:3001";
+const SCRAPER_API_URL =
+  process.env.NEXT_PUBLIC_SCRAPER_API_URL || "https://job-scraper-service-seven.vercel.app";
 
 const SOCIAL_SOURCES: { id: ScraperSource; label: string; color: string }[] = [
   { id: "threads", label: "Threads", color: "bg-emerald-500" },
@@ -106,7 +107,7 @@ export function SocialExplorer() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(
           errorData.error ||
-            `Service scraper merespon dengan status ${res.status}. Pastikan job-scraper-service (port 3001) aktif.`
+            `Service scraper merespon dengan status ${res.status}. Pastikan service aktif (${SCRAPER_API_URL}).`
         );
       }
 
@@ -123,7 +124,7 @@ export function SocialExplorer() {
       setErrorMsg(message);
       setResults([]);
       toast.error("Gagal mengambil data dari sosmed", {
-        description: "Pastikan job-scraper-service sedang berjalan di http://localhost:3001",
+        description: message.length < 90 ? message : `Periksa status service scraper di ${SCRAPER_API_URL}`,
       });
     } finally {
       setLoading(false);
@@ -388,9 +389,9 @@ export function SocialExplorer() {
               {errorMsg}
             </p>
             <p className="text-[10px] text-muted-foreground pt-1">
-              Pastikan service scraper berjalan di terminal:{" "}
+              Endpoint aktif:{" "}
               <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground">
-                cd job-scraper-service &amp;&amp; npm run dev
+                {SCRAPER_API_URL}
               </code>
             </p>
           </div>

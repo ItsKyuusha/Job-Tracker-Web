@@ -23,7 +23,8 @@ import { DateFilterOption, DATE_FILTER_OPTIONS, filterJobsByDate, deduplicateJob
 import { getSavedJobUrlsAction } from "../actions";
 import { toast } from "sonner";
 
-const SCRAPER_API_URL = process.env.NEXT_PUBLIC_SCRAPER_API_URL || "http://localhost:3001";
+const SCRAPER_API_URL =
+  process.env.NEXT_PUBLIC_SCRAPER_API_URL || "https://job-scraper-service-seven.vercel.app";
 
 const ALL_SOURCES: { id: ScraperSource; label: string; color: string; type: "portal" | "social" }[] = [
   { id: "jobstreet", label: "JobStreet", color: "bg-purple-500", type: "portal" },
@@ -124,7 +125,7 @@ export function JobExplorer() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(
           errorData.error ||
-            `Service scraper merespon dengan status ${res.status}. Pastikan job-scraper-service (port 3001) aktif.`
+            `Service scraper merespon dengan status ${res.status}. Pastikan service scraper aktif (${SCRAPER_API_URL}).`
         );
       }
 
@@ -141,7 +142,7 @@ export function JobExplorer() {
       setErrorMsg(message);
       setResults([]);
       toast.error("Gagal melakukan scraping", {
-        description: "Pastikan job-scraper-service sedang berjalan di http://localhost:3001",
+        description: message.length < 90 ? message : `Periksa status service scraper di ${SCRAPER_API_URL}`,
       });
     } finally {
       setLoading(false);
@@ -428,9 +429,9 @@ export function JobExplorer() {
               {errorMsg}
             </p>
             <p className="text-[10px] text-muted-foreground pt-1">
-              Jalankan perintah berikut di terminal:{" "}
+              Endpoint aktif:{" "}
               <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground">
-                cd job-scraper-service &amp;&amp; npm run dev
+                {SCRAPER_API_URL}
               </code>
             </p>
           </div>
