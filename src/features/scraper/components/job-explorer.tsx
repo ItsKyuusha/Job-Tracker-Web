@@ -428,6 +428,11 @@ export function JobExplorer() {
             <p className="text-[11px] leading-relaxed text-rose-600/90 dark:text-rose-400/90">
               {errorMsg}
             </p>
+            {errorMsg.toLowerCase().includes("browser") && (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium pt-1">
+                Tips: Beberapa portal membutuhkan browser runtime. Coba pilih sumber <strong>LinkedIn</strong> saja untuk pencarian cloud tanpa browser.
+              </p>
+            )}
             <p className="text-[10px] text-muted-foreground pt-1">
               Endpoint aktif:{" "}
               <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground">
