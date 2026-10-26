@@ -161,6 +161,47 @@ export type Database = {
           created_at?: string;
         };
       };
+      maganghub_listings: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          company_name: string;
+          location: string | null;
+          allowance: number | null;
+          work_days: number | null;
+          description: string | null;
+          source_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          company_name: string;
+          location?: string | null;
+          allowance?: number | null;
+          work_days?: number | null;
+          description?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          company_name?: string;
+          location?: string | null;
+          allowance?: number | null;
+          work_days?: number | null;
+          description?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -220,6 +261,15 @@ export type InsertApplicationEvent =
 export type UpdateJob = Database["public"]["Tables"]["jobs"]["Update"];
 export type UpdateApplication =
   Database["public"]["Tables"]["applications"]["Update"];
+
+// ─── MagangHub Listing ────────────────────────────────────────────────────────
+
+export type MaganghubListing =
+  Database["public"]["Tables"]["maganghub_listings"]["Row"];
+export type InsertMaganghubListing =
+  Database["public"]["Tables"]["maganghub_listings"]["Insert"];
+export type UpdateMaganghubListing =
+  Database["public"]["Tables"]["maganghub_listings"]["Update"];
 
 // ─── Composite types untuk queries dengan JOIN ─────────────────────────────────
 

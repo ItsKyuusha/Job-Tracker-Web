@@ -5,6 +5,7 @@ import {
   Building2,
   MessageSquareText,
   UserRound,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Lowongan Saya",
     href: "/jobs",
     icon: Briefcase,
+  },
+  {
+    label: "Riset MagangHub",
+    href: "/maganghub",
+    icon: GraduationCap,
   },
   {
     label: "Loker Gabungan",
