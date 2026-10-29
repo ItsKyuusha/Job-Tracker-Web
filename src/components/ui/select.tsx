@@ -26,6 +26,7 @@ interface SelectContextType {
     openUpwards: boolean;
   } | null;
   mounted: boolean;
+  contentRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const SelectContext = React.createContext<SelectContextType | null>(null);
@@ -50,7 +51,8 @@ function getOptionsFromChildren(children: React.ReactNode): OptionInfo[] {
         value: props.value,
         label: props.children ?? props.value,
       });
-    } else if (props && props.children) {
+    }
+    if (props && props.children) {
       options.push(...getOptionsFromChildren(props.children));
     }
   });
@@ -77,6 +79,7 @@ export function Select({
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLElement | null>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
   const [coords, setCoords] = React.useState<{
     top: number;
     left: number;
@@ -172,7 +175,8 @@ export function Select({
       const target = event.target as Node;
       if (
         containerRef.current?.contains(target) ||
-        triggerRef.current?.contains(target)
+        triggerRef.current?.contains(target) ||
+        contentRef.current?.contains(target)
       ) {
         return;
       }
@@ -220,6 +224,7 @@ export function Select({
         registerOption,
         coords,
         mounted,
+        contentRef,
       }}
     >
       <div ref={containerRef} className={cn("relative inline-block w-full", open && "z-30")}>
@@ -291,12 +296,13 @@ export function SelectContent({
   const context = React.useContext(SelectContext);
   if (!context) return null;
 
-  const { open, mounted, coords } = context;
+  const { open, mounted, coords, contentRef } = context;
 
   if (!open || !mounted || !coords) return null;
 
   return createPortal(
     <div
+      ref={contentRef}
       onClick={(e) => e.stopPropagation()}
       style={{
         position: "fixed",
@@ -335,6 +341,11 @@ export function SelectItem({
 
   return (
     <div
+      onMouseDown={(e) => {
+        // Mencegah mousedown membubbling ke listener handleClickOutside sebelum selection selesai
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       onClick={(e) => {
         e.stopPropagation();
         context.onValueChange(value);
