@@ -46,7 +46,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
       )}
 
       {/* Group 1: Posisi & Perusahaan */}
-      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs relative z-30">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Building2 className="w-3.5 h-3.5 text-primary" />
@@ -98,7 +98,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative z-20">
               <Label htmlFor="employment_type" className="text-xs font-medium">Tipe Pekerjaan</Label>
               <Select name="employment_type" defaultValue={defaultValues?.employment_type ?? "full_time"}>
                 <SelectTrigger id="employment_type" className="h-9 text-xs">
@@ -114,7 +114,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative z-10">
               <Label htmlFor="workplace_type" className="text-xs font-medium">Mode Tempat Kerja</Label>
               <Select name="workplace_type" defaultValue={defaultValues?.workplace_type ?? "hybrid"}>
                 <SelectTrigger id="workplace_type" className="h-9 text-xs">
@@ -132,7 +132,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
       </Card>
 
       {/* Group 2: Tanggal & Jadwal */}
-      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs relative z-20">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Calendar className="w-3.5 h-3.5 text-primary" />
@@ -167,7 +167,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
       </Card>
 
       {/* Group 3: Gaji */}
-      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs relative z-10">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Banknote className="w-3.5 h-3.5 text-primary" />
@@ -176,7 +176,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
           <Separator />
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative z-20">
               <Label htmlFor="currency" className="text-xs font-medium">Mata Uang</Label>
               <Select name="currency" defaultValue={defaultValues?.currency ?? "IDR"}>
                 <SelectTrigger id="currency" className="h-9 text-xs">
@@ -222,7 +222,7 @@ export function JobForm({ action, defaultValues, submitLabel = "Simpan Lowongan"
       </Card>
 
       {/* Group 4: Detail & Link */}
-      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs relative z-0">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <FileText className="w-3.5 h-3.5 text-primary" />

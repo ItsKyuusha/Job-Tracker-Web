@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Check } from "lucide-react";
 
@@ -13,13 +14,48 @@ interface SelectContextType {
   value: string;
   name?: string;
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  toggle: (triggerEl: HTMLElement) => void;
+  close: () => void;
   onValueChange: (val: string) => void;
   options: OptionInfo[];
   registerOption: (val: string, label: React.ReactNode) => void;
+  coords: {
+    top: number;
+    left: number;
+    width: number;
+    openUpwards: boolean;
+  } | null;
+  mounted: boolean;
 }
 
 const SelectContext = React.createContext<SelectContextType | null>(null);
+
+const emptySubscribe = () => () => {};
+
+function useIsMounted() {
+  return React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
+
+function getOptionsFromChildren(children: React.ReactNode): OptionInfo[] {
+  const options: OptionInfo[] = [];
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    const props = child.props as { value?: unknown; children?: React.ReactNode };
+    if (props && typeof props.value === "string") {
+      options.push({
+        value: props.value,
+        label: props.children ?? props.value,
+      });
+    } else if (props && props.children) {
+      options.push(...getOptionsFromChildren(props.children));
+    }
+  });
+  return options;
+}
 
 export function Select({
   value: controlledValue,
@@ -35,23 +71,55 @@ export function Select({
   children: React.ReactNode;
 }) {
   const [internalValue, setInternalValue] = React.useState(defaultValue);
+  const [prevDefault, setPrevDefault] = React.useState(defaultValue);
   const [open, setOpen] = React.useState(false);
-  const optionsMapRef = React.useRef<Map<string, React.ReactNode>>(new Map());
-  const [, setTick] = React.useState(0);
+  const mounted = useIsMounted();
+
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLElement | null>(null);
+  const [coords, setCoords] = React.useState<{
+    top: number;
+    left: number;
+    width: number;
+    openUpwards: boolean;
+  } | null>(null);
 
   const isControlled = controlledValue !== undefined;
+  if (!isControlled && defaultValue !== prevDefault) {
+    setPrevDefault(defaultValue);
+    setInternalValue(defaultValue);
+  }
   const currentValue = isControlled ? controlledValue : internalValue;
+
+  const childOptions = React.useMemo(
+    () => getOptionsFromChildren(children),
+    [children]
+  );
+  const [dynamicOptions, setDynamicOptions] = React.useState<OptionInfo[]>([]);
 
   const registerOption = React.useCallback(
     (val: string, label: React.ReactNode) => {
-      if (!optionsMapRef.current.has(val)) {
-        optionsMapRef.current.set(val, label);
-        setTick((t) => t + 1);
-      }
+      setDynamicOptions((prev) => {
+        if (prev.some((o) => o.value === val)) return prev;
+        return [...prev, { value: val, label }];
+      });
     },
     []
   );
+
+  const options = React.useMemo(() => {
+    const map = new Map<string, React.ReactNode>();
+    for (const opt of childOptions) {
+      map.set(opt.value, opt.label);
+    }
+    for (const opt of dynamicOptions) {
+      map.set(opt.value, opt.label);
+    }
+    return Array.from(map.entries()).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [childOptions, dynamicOptions]);
 
   const handleValueChange = React.useCallback(
     (val: string) => {
@@ -62,35 +130,82 @@ export function Select({
     [isControlled, onValueChange]
   );
 
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+  const calcCoords = (el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    const dropdownHeight = 220;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpwards =
+      spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+
+    let left = rect.left;
+    if (typeof window !== "undefined" && left + rect.width > window.innerWidth - 12) {
+      left = Math.max(12, window.innerWidth - rect.width - 12);
     }
 
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleKeyDown);
+    return {
+      top: openUpwards ? rect.top - 6 : rect.bottom + 6,
+      left,
+      width: rect.width,
+      openUpwards,
+    };
+  };
+
+  const toggle = React.useCallback((triggerEl: HTMLElement) => {
+    triggerRef.current = triggerEl;
+    setOpen((prev) => {
+      if (!prev) {
+        setCoords(calcCoords(triggerEl));
+        return true;
+      }
+      return false;
+    });
+  }, []);
+
+  const close = React.useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        containerRef.current?.contains(target) ||
+        triggerRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setOpen(false);
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        if (triggerRef.current instanceof HTMLElement) {
+          triggerRef.current.focus();
+        }
+      }
+    }
+
+    function handleScrollOrResize() {
+      if (triggerRef.current) {
+        setCoords(calcCoords(triggerRef.current));
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, [open]);
-
-  const options = React.useMemo(() => {
-    return Array.from(optionsMapRef.current.entries()).map(([value, label]) => ({
-      value,
-      label,
-    }));
-  }, [optionsMapRef.current.size]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <SelectContext.Provider
@@ -98,13 +213,16 @@ export function Select({
         value: currentValue,
         name,
         open,
-        setOpen,
+        toggle,
+        close,
         onValueChange: handleValueChange,
         options,
         registerOption,
+        coords,
+        mounted,
       }}
     >
-      <div ref={containerRef} className="relative inline-block w-full">
+      <div ref={containerRef} className={cn("relative inline-block w-full", open && "z-30")}>
         {name && <input type="hidden" name={name} value={currentValue} />}
         {children}
       </div>
@@ -127,8 +245,9 @@ export function SelectTrigger({
       type="button"
       onClick={(e) => {
         e.stopPropagation();
-        context.setOpen((prev) => !prev);
+        context.toggle(e.currentTarget);
       }}
+      aria-expanded={context.open}
       className={cn(
         "flex h-9 w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-1.5 text-xs text-foreground shadow-2xs transition-all hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none",
         context.open && "ring-1 ring-ring border-ring",
@@ -170,18 +289,34 @@ export function SelectContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const context = React.useContext(SelectContext);
-  if (!context || !context.open) return null;
+  if (!context) return null;
 
-  return (
+  const { open, mounted, coords } = context;
+
+  if (!open || !mounted || !coords) return null;
+
+  return createPortal(
     <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        position: "fixed",
+        left: `${coords.left}px`,
+        top: coords.openUpwards ? undefined : `${coords.top}px`,
+        bottom: coords.openUpwards
+          ? `${window.innerHeight - coords.top}px`
+          : undefined,
+        width: `${coords.width}px`,
+        zIndex: 9999,
+      }}
       className={cn(
-        "absolute left-0 z-50 mt-1.5 max-h-64 min-w-[160px] w-max overflow-y-auto rounded-xl border border-border bg-popover/95 p-1 text-popover-foreground shadow-xl shadow-black/10 backdrop-blur-md animate-in fade-in-0 zoom-in-95",
+        "max-h-64 overflow-y-auto rounded-xl border border-border bg-popover/98 p-1 text-popover-foreground shadow-2xl shadow-black/20 backdrop-blur-md animate-in fade-in-0 zoom-in-95",
         className
       )}
       {...props}
     >
       {children}
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -195,10 +330,6 @@ export function SelectItem({
 }) {
   const context = React.useContext(SelectContext);
   if (!context) return null;
-
-  React.useEffect(() => {
-    context.registerOption(value, children);
-  }, [value, context.registerOption]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isSelected = context.value === value;
 
