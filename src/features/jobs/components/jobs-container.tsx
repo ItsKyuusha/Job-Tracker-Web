@@ -98,6 +98,9 @@ export function JobsContainer({
                     <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
                       Dibuat
                     </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
