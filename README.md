@@ -13,22 +13,25 @@ Aplikasi web untuk melacak dan mengelola proses lamaran pekerjaan secara terstru
 
 ## Fitur
 
-- **Dashboard** — Ringkasan stats, conversion funnel, aktivitas terbaru, dan deadline mendatang
-- **Job Management** — Tambah, edit, hapus, dan arsipkan lowongan
-- **Application Tracking** — 7 status lamaran dengan riwayat perubahan otomatis
-- **Pipeline Stepper** — Visualisasi tahapan seleksi per lowongan
-- **Dual View** — Tampilan Grid Cards dan Kanban Board
-- **Search & Filter** — Cari by posisi/perusahaan, filter by status/tipe/tempat, sort by berbagai kriteria
-- **Profil** — Edit nama dan ganti password
-- **Dark / Light Mode** — Toggle tema dengan persistence
+- **Dashboard** — Ringkasan 8 metrik status lamaran, conversion funnel pipeline, aktivitas terbaru (clickable), dan deadline mendatang
+- **Job Management (Lowongan Saya)** — Tambah, edit, hapus, dan arsipkan lowongan
+- **Multi-Layout View** — Pilihan tampilan **Grid Cards**, **Tabel Daftar**, dan **Kanban Board** interaktif
+- **Riset MagangHub** — Wadah pembanding dan riset lowongan magang MagangHub dengan field **Kurikulum yang Dipelajari**, **Kuota**, **Total Pelamar**, uang saku, hari kerja, dan layout Grid/Tabel
+- **Eksplorasi Loker Live (Scraper)** — Pencarian live dari portal karir resmi (JobStreet, Glints) dan media sosial (Threads, LinkedIn) dengan opsi langsung simpan ke Kanban
+- **Application Tracking** — 7 status lamaran (`saved`, `applied`, `assessment`, `interview`, `offer`, `rejected`, `withdrawn`) dengan riwayat perubahan otomatis
+- **Pipeline Stepper** — Visualisasi tahapan seleksi interaktif per lowongan
+- **Search & Filter** — Pencarian instan (debounced), filter status/tipe/tempat kerja, dan multi-kriteria sorting
+- **Profil & Autentikasi** — Email/password dan Google OAuth (PKCE flow), ganti nama, dan reset password
+- **Dark / Light Mode** — Toggle tema modern dengan persistence
 
 ## Struktur Database
 
 ```
-profiles          → Data profil pengguna (relasi 1:1 dengan auth.users)
-jobs              → Informasi lowongan pekerjaan
-applications      → Status lamaran per user per lowongan
-application_events→ Riwayat perubahan status (audit log, append-only)
+profiles            → Data profil pengguna (relasi 1:1 dengan auth.users)
+jobs                → Informasi lowongan pekerjaan (manual & hasil import scraper)
+applications        → Status lamaran per user per lowongan
+application_events  → Riwayat audit log perubahan status & catatan
+maganghub_listings  → Data riset lowongan magang (kurikulum, kuota, pelamar, uang saku)
 ```
 
 ## Setup & Instalasi
@@ -49,6 +52,8 @@ npm install
    - `supabase/migrations/0002_create_jobs.sql`
    - `supabase/migrations/0003_create_applications.sql`
    - `supabase/migrations/0004_create_application_events.sql`
+   - `supabase/migrations/0005_create_maganghub_listings.sql`
+   - `supabase/migrations/0006_add_curriculum_quota_to_maganghub.sql`
 3. Di **Authentication → Providers**, pastikan Email provider aktif
 
 ### 3. Konfigurasi environment
@@ -118,11 +123,14 @@ Setelah database selesai di-setup, generate types dari schema aktual untuk type 
 npx supabase gen types typescript --project-id <your-project-id> > src/types/database.gen.ts
 ```
 
-### Roadmap
+### Arsitektur Ekosistem CareerSync
 
-Project ini dirancang sebagai bagian dari ekosistem **CareerSync** yang terdiri dari:
+CareerSync terdiri dari 2 microservice/aplikasi:
 
-1. **Job Tracker Web** ← Ini (selesai)
-2. **Job Scraper Service** — Express.js service untuk auto-scraping lowongan dari LinkedIn, Glints, JobStreet, dll. (belum dibangun, repo terpisah)
+1. **Job Tracker Web** (repositori ini) — Antarmuka web utama pelacak karir, kanban board, dan riset MagangHub (Next.js 16 + Supabase).
+2. **Job Scraper Service** (`../job-scraper-service`) — Express.js microservice dengan Playwright, Cheerio, dan p-queue untuk multi-source scraping (JobStreet, Glints, Threads, LinkedIn).
 
-Schema database sudah dirancang agar siap menerima data dari scraper tanpa perubahan struktur (`jobs.source_name`, `jobs.source_url`, `jobs.user_id` nullable).
+Konfigurasi environment scraper di Web App:
+```env
+NEXT_PUBLIC_SCRAPER_API_URL=https://job-scraper-service-seven.vercel.app
+```
