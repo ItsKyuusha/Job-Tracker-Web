@@ -88,17 +88,6 @@ export const APPLICATION_STATUS_CONFIG: Record<
   },
 };
 
-// Legacy backwards compatibility
-export const APPLICATION_STATUS_COLORS: Record<ApplicationStatus, string> = {
-  saved: "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800",
-  applied: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-900",
-  assessment: "bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-900",
-  interview: "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 border-violet-200 dark:border-violet-900",
-  offer: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900",
-  rejected: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-900",
-  withdrawn: "bg-zinc-100 text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
-};
-
 // ─── Company initials color generator ─────────────────────────────────────────
 
 export function getCompanyGradient(name: string): string {
@@ -143,6 +132,18 @@ export function formatRelativeDate(date: string | null | undefined): string {
   if (diffDays > 1 && diffDays <= 7) return `${diffDays} hari lagi`;
   if (diffDays < -1 && diffDays >= -7) return `${Math.abs(diffDays)} hari lalu`;
   return formatDate(date);
+}
+
+export function isDeadlineUrgent(
+  date: string | null | undefined,
+  days = 3
+): boolean {
+  if (!date) return false;
+  const now = new Date();
+  const target = new Date(date);
+  const diffMs = target.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return diffDays >= 0 && diffDays <= days;
 }
 
 export function formatSalary(

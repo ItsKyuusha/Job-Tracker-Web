@@ -35,7 +35,7 @@ export default async function MaganghubPage({
   let query = supabase
     .from("maganghub_listings")
     .select(
-      "id, title, company_name, location, allowance, work_days, source_url, created_at"
+      "id, title, company_name, location, allowance, work_days, source_url, curriculum, quota, total_applicants, created_at"
     )
     .eq("user_id", user.id);
 

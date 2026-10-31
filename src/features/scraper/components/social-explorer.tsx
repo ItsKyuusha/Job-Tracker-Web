@@ -10,19 +10,14 @@ import {
   Loader2,
   AlertCircle,
   Sparkles,
-  Phone,
-  Mail,
-  Info,
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilterOption, DATE_FILTER_OPTIONS, filterJobsByDate, deduplicateJobsClient } from "../utils/date";
 import { getSavedJobUrlsAction } from "../actions";
+import { SCRAPER_API_URL } from "../constants";
 import { toast } from "sonner";
-
-const SCRAPER_API_URL =
-  process.env.NEXT_PUBLIC_SCRAPER_API_URL || "https://job-scraper-service-seven.vercel.app";
 
 const SOCIAL_SOURCES: { id: ScraperSource; label: string; color: string }[] = [
   { id: "threads", label: "Threads", color: "bg-emerald-500" },
@@ -30,7 +25,7 @@ const SOCIAL_SOURCES: { id: ScraperSource; label: string; color: string }[] = [
 ];
 
 export function SocialExplorer() {
-  const [keyword, setKeyword] = useState("frontend");
+  const [keyword, setKeyword] = useState("");
   const [selectedSources, setSelectedSources] = useState<ScraperSource[]>([
     "threads",
     "linkedin",

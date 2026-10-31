@@ -8,7 +8,7 @@ import { ConversionFunnel } from "@/features/dashboard/components/conversion-fun
 import type { ApplicationStatus } from "@/types/database";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import { Plus, ArrowRight, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Dashboard — CareerSync",
@@ -49,11 +49,13 @@ export default async function DashboardPage() {
 
   const stats = {
     total: applications.length,
+    saved: applications.filter((a) => a.status === "saved").length,
     applied: applications.filter((a) => a.status === "applied").length,
+    assessment: applications.filter((a) => a.status === "assessment").length,
     interview: applications.filter((a) => a.status === "interview").length,
     offer: applications.filter((a) => a.status === "offer").length,
     rejected: applications.filter((a) => a.status === "rejected").length,
-    saved: applications.filter((a) => a.status === "saved").length,
+    withdrawn: applications.filter((a) => a.status === "withdrawn").length,
   };
 
   const recentActivity = applications.slice(0, 5);

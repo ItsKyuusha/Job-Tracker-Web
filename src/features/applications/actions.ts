@@ -79,12 +79,21 @@ export async function addApplicationNoteAction(
 
   if (!user) return { error: "Anda harus login" };
 
-  // Tambah event manual dengan catatan
+  // Ambil status aktif dulu agar event tidak salah mencatat to_status
+  const { data: app } = await supabase
+    .from("applications")
+    .select("status")
+    .eq("id", applicationId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!app) return { error: "Lamaran tidak ditemukan." };
+
   const { error } = await supabase.from("application_events").insert({
     application_id: applicationId,
     user_id: user.id,
     from_status: null,
-    to_status: "saved" as ApplicationStatus, // placeholder, event ini untuk catatan
+    to_status: app.status as ApplicationStatus,
     notes: note,
   });
 

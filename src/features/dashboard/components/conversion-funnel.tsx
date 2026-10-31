@@ -12,8 +12,6 @@ type FunnelStats = {
 export function ConversionFunnel({ stats }: { stats: FunnelStats }) {
   if (stats.total === 0) return null;
 
-  const appliedPct = Math.round((stats.applied / stats.total) * 100) || 0;
-  const interviewPct = Math.round((stats.interview / stats.total) * 100) || 0;
   const offerPct = Math.round((stats.offer / stats.total) * 100) || 0;
 
   return (

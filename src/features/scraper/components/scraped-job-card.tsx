@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ScrapedJob, ScraperSource } from "../types";
 import {
   ExternalLink,
@@ -51,12 +51,9 @@ const sourceConfig: Record<
 };
 
 export function ScrapedJobCard({ job, isSaved = false, onSavedChange }: JobCardProps) {
-  const [saved, setSaved] = useState(isSaved);
+  const [isLocallySaved, setIsLocallySaved] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setSaved(isSaved);
-  }, [isSaved]);
+  const saved = isSaved || isLocallySaved;
 
   const source = sourceConfig[job.source] || {
     label: job.source,
@@ -92,13 +89,13 @@ export function ScrapedJobCard({ job, isSaved = false, onSavedChange }: JobCardP
     try {
       const res = await importScrapedJobAction(job);
       if (res.alreadySaved) {
-        setSaved(true);
+        setIsLocallySaved(true);
         if (job.source_url) onSavedChange?.(job.source_url);
         toast.info("Lowongan sudah ada di Kanban!", {
           description: "Lowongan ini sebelumnya sudah pernah Anda simpan.",
         });
       } else if (res.success) {
-        setSaved(true);
+        setIsLocallySaved(true);
         if (job.source_url) onSavedChange?.(job.source_url);
         toast.success("Berhasil disimpan ke Kanban!", {
           description: `${job.title} di ${job.company} masuk ke kolom 'Tersimpan'.`,

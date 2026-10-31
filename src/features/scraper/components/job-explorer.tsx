@@ -12,19 +12,16 @@ import {
   Compass,
   AlertCircle,
   Layers,
-  Building2,
-  MessageSquareText,
   Clock,
-  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilterOption, DATE_FILTER_OPTIONS, filterJobsByDate, deduplicateJobsClient } from "../utils/date";
 import { getSavedJobUrlsAction } from "../actions";
+import { SCRAPER_API_URL } from "../constants";
 import { toast } from "sonner";
 
-const SCRAPER_API_URL =
-  process.env.NEXT_PUBLIC_SCRAPER_API_URL || "https://job-scraper-service-seven.vercel.app";
+
 
 const ALL_SOURCES: { id: ScraperSource; label: string; color: string; type: "portal" | "social" }[] = [
   { id: "jobstreet", label: "JobStreet", color: "bg-purple-500", type: "portal" },
@@ -34,8 +31,8 @@ const ALL_SOURCES: { id: ScraperSource; label: string; color: string; type: "por
 ];
 
 export function JobExplorer() {
-  const [keyword, setKeyword] = useState("Frontend Developer");
-  const [location, setLocation] = useState("Jakarta");
+  const [keyword, setKeyword] = useState("");
+  const [location, setLocation] = useState("");
   const [selectedSources, setSelectedSources] = useState<ScraperSource[]>([
     "jobstreet",
     "glints",

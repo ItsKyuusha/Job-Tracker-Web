@@ -103,12 +103,8 @@ export default async function JobsPage({
     });
   }
 
-  // ── Pagination (grid view only — kanban gets all) ──────────────────────────
+  // ── Pagination info (grid/table view slices on client, kanban gets all) ───
   const totalItems = jobs.length;
-  const paginatedJobs = jobs.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
 
   const hasSearchOrFilter = Boolean(
     p.search ||

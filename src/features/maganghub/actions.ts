@@ -26,6 +26,15 @@ const maganghubSchema = z.object({
       .nullable()
       .optional()
   ),
+  quota: z.preprocess(
+    (v) => (v === "" || v == null ? null : Number(v)),
+    z.number().int().positive("Kuota harus positif").nullable().optional()
+  ),
+  total_applicants: z.preprocess(
+    (v) => (v === "" || v == null ? null : Number(v)),
+    z.number().int().min(0, "Total pelamar tidak boleh negatif").nullable().optional()
+  ),
+  curriculum: z.string().optional().nullable(),
   description: z.string().optional(),
   source_url: z
     .string()
@@ -63,12 +72,13 @@ export async function createMaganghubAction(
     };
   }
 
-  const { source_url, ...rest } = parsed.data;
+  const { source_url, curriculum, ...rest } = parsed.data;
 
   const insert: InsertMaganghubListing = {
     ...rest,
     user_id: user.id,
     source_url: source_url || null,
+    curriculum: curriculum || null,
   };
 
   const { data: listing, error } = await supabase
@@ -109,11 +119,12 @@ export async function updateMaganghubAction(
     };
   }
 
-  const { source_url, ...rest } = parsed.data;
+  const { source_url, curriculum, ...rest } = parsed.data;
 
   const update: UpdateMaganghubListing = {
     ...rest,
     source_url: source_url || null,
+    curriculum: curriculum || null,
   };
 
   const { error } = await supabase

@@ -268,6 +268,7 @@ export default async function JobDetailPage({ params }: { params: PageParams }) 
           {application && (
             <ApplicationStatus
               applicationId={application.id}
+              jobId={id}
               currentStatus={application.status}
               appliedAt={application.applied_at}
               deadlineAt={application.deadline_at}

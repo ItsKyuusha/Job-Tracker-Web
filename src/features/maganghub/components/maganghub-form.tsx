@@ -15,6 +15,8 @@ import {
   Building2,
   Banknote,
   FileText,
+  BookOpen,
+  Users,
 } from "lucide-react";
 
 type MaganghubFormProps = {
@@ -160,7 +162,84 @@ export function MaganghubForm({
         </CardContent>
       </Card>
 
-      {/* Group 3: Detail & Link */}
+      {/* Group 3: Kurikulum & Kuota */}
+      <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <BookOpen className="w-3.5 h-3.5 text-primary" />
+            <span>Kurikulum &amp; Persaingan (Opsional)</span>
+          </div>
+          <Separator />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="curriculum" className="text-xs font-medium">
+              Kurikulum yang Dipelajari
+            </Label>
+            <Textarea
+              id="curriculum"
+              name="curriculum"
+              placeholder="cth. React, Node.js, Figma, Machine Learning, Agile Methodology..."
+              rows={3}
+              defaultValue={defaultValues?.curriculum ?? ""}
+              className="resize-y text-xs leading-relaxed"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Skill atau teknologi yang akan dipelajari/digunakan selama magang.
+            </p>
+            <FieldError errors={state.fieldErrors?.curriculum} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="quota" className="text-xs font-medium">
+                Kuota Lowongan
+              </Label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="quota"
+                  name="quota"
+                  type="number"
+                  placeholder="cth. 2"
+                  min={1}
+                  defaultValue={defaultValues?.quota?.toString() ?? ""}
+                  className="h-9 text-xs pl-9"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Jumlah posisi yang tersedia di lowongan ini.
+              </p>
+              <FieldError errors={state.fieldErrors?.quota} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="total_applicants" className="text-xs font-medium">
+                Total Pelamar Saat Ini
+              </Label>
+              <div className="relative">
+                <Input
+                  id="total_applicants"
+                  name="total_applicants"
+                  type="number"
+                  placeholder="cth. 10"
+                  min={0}
+                  defaultValue={defaultValues?.total_applicants?.toString() ?? ""}
+                  className="h-9 text-xs pr-16"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                  pelamar
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Tampil sebagai <strong>Kuota/Pesaing</strong>, misal 2/10.
+              </p>
+              <FieldError errors={state.fieldErrors?.total_applicants} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Group 4: Detail & Link */}
       <Card className="border-border/80 bg-card/60 backdrop-blur-xs">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">

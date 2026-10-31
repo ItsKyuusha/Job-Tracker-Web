@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, LayoutGrid, Kanban, Archive, ChevronDown } from "lucide-react";
+import { Search, X, LayoutGrid, Kanban, Archive, ChevronDown, TableProperties } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type JobFiltersProps = {
-  viewMode: "grid" | "kanban";
-  onViewChange: (mode: "grid" | "kanban") => void;
+  viewMode: "grid" | "kanban" | "table";
+  onViewChange: (mode: "grid" | "kanban" | "table") => void;
 };
 
 // Styled Select Native yang tidak akan pernah terpotong/ke-hide oleh overflow apapun
@@ -42,6 +42,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const createQueryString = useCallback(
     (updates: Record<string, string | null>) => {
@@ -98,17 +99,16 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
           defaultValue={searchParams.get("search") ?? ""}
           onChange={(e) => {
             const val = e.target.value;
-            const win = window as unknown as Record<string, ReturnType<typeof setTimeout>>;
-            clearTimeout(win._searchTimeout);
-            win._searchTimeout = setTimeout(() => handleSearch(val), 350);
+            if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+            searchTimerRef.current = setTimeout(() => handleSearch(val), 350);
           }}
         />
       </div>
 
       {/* 2. Group Filter Dropdowns (Satu Baris, Tanpa Overflow Clipping) */}
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 shrink-0">
-        {/* Status (Hanya saat Grid Mode) */}
-        {viewMode === "grid" && (
+        {/* Status (Hanya saat Grid / Table Mode) */}
+        {(viewMode === "grid" || viewMode === "table") && (
           <FilterSelect
             value={searchParams.get("status") ?? "all"}
             onChange={(v) => handleFilter("status", v)}
@@ -197,7 +197,7 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
       {/* 3. Divider Halus */}
       <div className="hidden lg:block w-px h-6 bg-border/80 shrink-0 mx-0.5" />
 
-      {/* 4. View Switcher (Grid / Kanban) Dalam Baris yang Sama */}
+      {/* 4. View Switcher (Grid / Kanban / Table) Dalam Baris yang Sama */}
       <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end lg:self-auto">
         <Button
           variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -210,6 +210,18 @@ export function JobFilters({ viewMode, onViewChange }: JobFiltersProps) {
         >
           <LayoutGrid className="w-3.5 h-3.5 text-indigo-500" />
           <span className="hidden sm:inline">Grid</span>
+        </Button>
+        <Button
+          variant={viewMode === "table" ? "secondary" : "ghost"}
+          size="sm"
+          className={cn(
+            "h-7.5 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            viewMode === "table" && "bg-card text-foreground shadow-2xs font-bold"
+          )}
+          onClick={() => onViewChange("table")}
+        >
+          <TableProperties className="w-3.5 h-3.5 text-indigo-500" />
+          <span className="hidden sm:inline">Tabel</span>
         </Button>
         <Button
           variant={viewMode === "kanban" ? "secondary" : "ghost"}

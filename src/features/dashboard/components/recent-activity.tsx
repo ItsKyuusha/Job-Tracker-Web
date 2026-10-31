@@ -48,24 +48,38 @@ export function RecentActivity({ activities }: { activities: ActivityItem[] }) {
         </Link>
       </CardHeader>
       <CardContent className="divide-y divide-border/40 p-0">
-        {activities.map((item, i) => (
-          <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-            <div className="min-w-0 pr-3">
-              <p className="text-xs font-bold text-foreground truncate">
-                {item.jobs?.title ?? "—"}
-              </p>
-              <p className="text-[11px] text-muted-foreground truncate mt-0.5 font-medium">
-                {item.jobs?.company_name ?? "—"}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <StatusBadge status={item.status} />
-              <span className="text-[10px] text-muted-foreground font-mono">
-                {formatRelativeDate(item.updated_at)}
-              </span>
-            </div>
-          </div>
-        ))}
+        {activities.map((item, i) => {
+          const jobId = item.jobs?.id;
+          const Wrapper = ({ children }: { children: React.ReactNode }) =>
+            jobId ? (
+              <Link href={`/jobs/${jobId}`} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                {children}
+              </Link>
+            ) : (
+              <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                {children}
+              </div>
+            );
+
+          return (
+            <Wrapper key={i}>
+              <div className="min-w-0 pr-3">
+                <p className="text-xs font-bold text-foreground truncate">
+                  {item.jobs?.title ?? "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5 font-medium">
+                  {item.jobs?.company_name ?? "—"}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <StatusBadge status={item.status} />
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {formatRelativeDate(item.updated_at)}
+                </span>
+              </div>
+            </Wrapper>
+          );
+        })}
       </CardContent>
     </Card>
   );

@@ -16,6 +16,8 @@ import {
   ExternalLink,
   FileText,
   Building2,
+  BookOpen,
+  Users,
 } from "lucide-react";
 
 type PageParams = Promise<{ id: string }>;
@@ -190,18 +192,35 @@ export default async function MaganghubDetailPage({
               )}
 
               <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40">
-                <div className="p-2 rounded-lg bg-muted text-muted-foreground">
-                  <FileText className="w-4 h-4" />
+                  <div className="p-2 rounded-lg bg-muted text-muted-foreground">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground font-medium block">
+                      Ditambahkan
+                    </span>
+                    <span className="font-bold text-foreground">
+                      {formatDate(listing.created_at)}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground font-medium block">
-                    Ditambahkan
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {formatDate(listing.created_at)}
-                  </span>
+
+              {/* Kuota & Total Pelamar */}
+              {(listing.quota || listing.total_applicants != null) && (
+                <div className="flex items-center gap-3 text-xs p-2.5 rounded-xl bg-muted/30 border border-border/40 sm:col-span-2 lg:col-span-1">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground font-medium block">
+                      Kuota / Total Pelamar
+                    </span>
+                    <span className="font-bold text-foreground">
+                      {listing.quota ?? "?"} kuota &mdash; {listing.total_applicants ?? "?"} pelamar
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -235,6 +254,23 @@ export default async function MaganghubDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Curriculum */}
+          {listing.curriculum && (
+            <Card className="border border-border/80 bg-card/70 backdrop-blur-md">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <BookOpen className="w-3.5 h-3.5 text-violet-500" />
+                  Kurikulum yang Dipelajari
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-foreground">
+                  {listing.curriculum}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Right Column: Quick Actions */}

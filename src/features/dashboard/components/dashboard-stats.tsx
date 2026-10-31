@@ -2,19 +2,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Bookmark,
   Send,
+  ClipboardList,
   MessageSquare,
   Trophy,
   XCircle,
   Briefcase,
+  Undo2,
 } from "lucide-react";
 
 type Stats = {
   total: number;
   saved: number;
   applied: number;
+  assessment: number;
   interview: number;
   offer: number;
   rejected: number;
+  withdrawn: number;
 };
 
 export function DashboardStats({ stats }: { stats: Stats }) {
@@ -50,6 +54,16 @@ export function DashboardStats({ stats }: { stats: Stats }) {
       gradient: "from-blue-500/5 to-transparent",
     },
     {
+      label: "Assessment",
+      value: stats.assessment,
+      icon: ClipboardList,
+      accent: "text-amber-600 dark:text-amber-400",
+      badge: "Tes",
+      badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+      borderGlow: "hover:border-amber-500/40",
+      gradient: "from-amber-500/5 to-transparent",
+    },
+    {
       label: "Tahap Interview",
       value: stats.interview,
       icon: MessageSquare,
@@ -79,10 +93,20 @@ export function DashboardStats({ stats }: { stats: Stats }) {
       borderGlow: "hover:border-rose-500/40",
       gradient: "from-rose-500/5 to-transparent",
     },
+    {
+      label: "Dibatalkan",
+      value: stats.withdrawn,
+      icon: Undo2,
+      accent: "text-slate-500 dark:text-slate-400",
+      badge: "Mundur",
+      badgeClass: "bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-500/20",
+      borderGlow: "hover:border-slate-500/40",
+      gradient: "from-slate-500/5 to-transparent",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (

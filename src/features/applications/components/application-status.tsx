@@ -21,6 +21,7 @@ import { toast } from "sonner";
 
 type ApplicationStatusProps = {
   applicationId: string;
+  jobId: string;
   currentStatus: AppStatus;
   appliedAt: string | null;
   deadlineAt: string | null;
@@ -39,15 +40,12 @@ const STATUS_ORDER: AppStatus[] = [
 
 export function ApplicationStatus({
   applicationId,
+  jobId,
   currentStatus,
   appliedAt,
   deadlineAt,
   notes,
 }: ApplicationStatusProps) {
-  const jobId = typeof window !== "undefined"
-    ? window.location.pathname.split("/jobs/")[1]?.split("/")[0] ?? ""
-    : "";
-
   const boundAction = updateApplicationAction.bind(null, applicationId, jobId);
   const [state, formAction, pending] = useActionState(boundAction, {});
 

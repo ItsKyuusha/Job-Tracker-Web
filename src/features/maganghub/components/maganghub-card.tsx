@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, getCompanyGradient } from "@/lib/utils";
 import type { MaganghubListItem } from "@/features/maganghub/types";
-import { MapPin, Banknote, CalendarDays, Clock } from "lucide-react";
+import { MapPin, Banknote, CalendarDays, Clock, Target, Users } from "lucide-react";
 
 type MaganghubCardProps = {
   listing: MaganghubListItem;
@@ -20,6 +20,18 @@ function formatAllowance(amount: number | null): string {
 export function MaganghubCard({ listing }: MaganghubCardProps) {
   const initial = listing.company_name?.charAt(0)?.toUpperCase() || "M";
   const gradientClass = getCompanyGradient(listing.company_name);
+
+  const quota = listing.quota;
+  const total = listing.total_applicants;
+  const ratio = quota && quota > 0 && total != null ? total / quota : null;
+  const competitionColor =
+    ratio == null
+      ? "text-slate-700 dark:text-slate-300 bg-muted/70 border-border/60"
+      : ratio >= 2
+      ? "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20"
+      : ratio >= 1
+      ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20"
+      : "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/20";
 
   return (
     <Link href={`/maganghub/${listing.id}`} className="block group">
@@ -67,6 +79,18 @@ export function MaganghubCard({ listing }: MaganghubCardProps) {
               <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                 <Banknote className="w-3 h-3 text-emerald-500 shrink-0" />
                 {formatAllowance(listing.allowance)}
+              </span>
+            )}
+            {quota != null && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-slate-700 dark:text-slate-300 bg-muted/70 px-2.5 py-1 rounded-lg border border-border/60">
+                <Target className="w-3 h-3 text-violet-500 shrink-0" />
+                {quota} kuota
+              </span>
+            )}
+            {total != null && (
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${competitionColor}`}>
+                <Users className="w-3 h-3 shrink-0" />
+                {total} pelamar
               </span>
             )}
           </div>

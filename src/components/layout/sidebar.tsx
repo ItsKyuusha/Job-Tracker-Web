@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-links";
-import { Sparkles, Plus, Zap, X, LogOut, ChevronRight } from "lucide-react";
+import { Plus, Zap, X, LogOut, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "./sidebar-context";
 import { logoutAction } from "@/features/auth/actions";
@@ -178,16 +178,6 @@ export function Sidebar({ displayName, email, avatarUrl }: SidebarProps) {
 
         {/* Sidebar Footer info card */}
         <div className="p-4 border-t border-sidebar-border shrink-0 space-y-3">
-          <div className="p-3 rounded-xl bg-linear-to-br from-indigo-500/5 via-violet-500/5 to-purple-500/5 border border-indigo-500/15 text-xs space-y-1">
-            <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold text-[11px]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Upcoming Update</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Scraper service untuk LinkedIn & Glints sedang dirancang.
-            </p>
-          </div>
-
           {/* Mobile-only bottom quick actions */}
           <div className="flex lg:hidden items-center justify-between pt-1">
             <div className="flex items-center gap-2">

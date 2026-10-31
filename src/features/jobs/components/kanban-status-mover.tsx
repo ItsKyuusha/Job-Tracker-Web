@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
+import { updateApplicationAction } from "@/features/applications/actions";
 
 const ALL_STATUSES: ApplicationStatus[] = [
   "saved",
@@ -36,9 +37,6 @@ async function updateStatusDirect(
   jobId: string,
   newStatus: ApplicationStatus
 ) {
-  const { updateApplicationAction } = await import(
-    "@/features/applications/actions"
-  );
   const formData = new FormData();
   formData.set("status", newStatus);
   const result = await updateApplicationAction(applicationId, jobId, {}, formData);

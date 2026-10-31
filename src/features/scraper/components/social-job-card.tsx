@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ScrapedJob } from "../types";
 import {
   ExternalLink,
@@ -28,12 +28,9 @@ interface SocialJobCardProps {
 export function SocialJobCard({ job, isSaved = false, onSavedChange }: SocialJobCardProps) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [saved, setSaved] = useState(isSaved);
+  const [isLocallySaved, setIsLocallySaved] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setSaved(isSaved);
-  }, [isSaved]);
+  const saved = isSaved || isLocallySaved;
 
   const isThreads = job.source === "threads";
   const platformName = isThreads ? "Threads" : "LinkedIn";
@@ -66,13 +63,13 @@ export function SocialJobCard({ job, isSaved = false, onSavedChange }: SocialJob
     try {
       const res = await importScrapedJobAction(job);
       if (res.alreadySaved) {
-        setSaved(true);
+        setIsLocallySaved(true);
         if (job.source_url) onSavedChange?.(job.source_url);
         toast.info("Lowongan sudah ada di Kanban!", {
           description: "Lowongan ini sebelumnya sudah pernah Anda simpan.",
         });
       } else if (res.success) {
-        setSaved(true);
+        setIsLocallySaved(true);
         if (job.source_url) onSavedChange?.(job.source_url);
         toast.success("Berhasil disimpan ke Kanban!", {
           description: `${job.title} masuk ke kolom 'Tersimpan'.`,

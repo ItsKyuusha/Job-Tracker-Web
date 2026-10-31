@@ -9,6 +9,9 @@ export type MaganghubListItem = Pick<
   | "allowance"
   | "work_days"
   | "source_url"
+  | "curriculum"
+  | "quota"
+  | "total_applicants"
   | "created_at"
 >;
 

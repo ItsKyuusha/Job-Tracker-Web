@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate, formatRelativeDate } from "@/lib/utils";
+import { formatDate, formatRelativeDate, isDeadlineUrgent } from "@/lib/utils";
 import { CalendarClock, ArrowUpRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -41,17 +41,21 @@ export function UpcomingDeadlines({ deadlines }: { deadlines: DeadlineItem[] }) 
       </CardHeader>
       <CardContent className="divide-y divide-border/40 p-0">
         {deadlines.map((item, i) => {
-          const daysLeft = item.deadline_at
-            ? Math.ceil(
-                (new Date(item.deadline_at).getTime() - Date.now()) /
-                  (1000 * 60 * 60 * 24)
-              )
-            : null;
-
-          const isUrgent = daysLeft !== null && daysLeft <= 3;
+          const isUrgent = isDeadlineUrgent(item.deadline_at);
+          const jobId = item.jobs?.id;
+          const Wrapper = ({ children }: { children: React.ReactNode }) =>
+            jobId ? (
+              <Link href={`/jobs/${jobId}`} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                {children}
+              </Link>
+            ) : (
+              <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                {children}
+              </div>
+            );
 
           return (
-            <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+            <Wrapper key={i}>
               <div className="min-w-0 pr-3">
                 <p className="text-xs font-bold text-foreground truncate">
                   {item.jobs?.title ?? "—"}
@@ -75,7 +79,7 @@ export function UpcomingDeadlines({ deadlines }: { deadlines: DeadlineItem[] }) 
                   {formatDate(item.deadline_at)}
                 </span>
               </div>
-            </div>
+            </Wrapper>
           );
         })}
       </CardContent>

@@ -172,6 +172,9 @@ export type Database = {
           work_days: number | null;
           description: string | null;
           source_url: string | null;
+          curriculum: string | null;
+          quota: number | null;
+          total_applicants: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -185,6 +188,9 @@ export type Database = {
           work_days?: number | null;
           description?: string | null;
           source_url?: string | null;
+          curriculum?: string | null;
+          quota?: number | null;
+          total_applicants?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -198,6 +204,9 @@ export type Database = {
           work_days?: number | null;
           description?: string | null;
           source_url?: string | null;
+          curriculum?: string | null;
+          quota?: number | null;
+          total_applicants?: number | null;
           created_at?: string;
           updated_at?: string;
         };

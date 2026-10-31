@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, ChevronDown } from "lucide-react";
+import { Search, X, ChevronDown, LayoutGrid, TableProperties } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function FilterSelect({
@@ -32,10 +32,16 @@ function FilterSelect({
   );
 }
 
-export function MaganghubFilters() {
+type MaganghubFiltersProps = {
+  viewMode: "grid" | "table";
+  onViewChange: (mode: "grid" | "table") => void;
+};
+
+export function MaganghubFilters({ viewMode, onViewChange }: MaganghubFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const createQueryString = useCallback(
     (updates: Record<string, string | null>) => {
@@ -83,9 +89,8 @@ export function MaganghubFilters() {
           defaultValue={searchParams.get("search") ?? ""}
           onChange={(e) => {
             const val = e.target.value;
-            const win = window as unknown as Record<string, ReturnType<typeof setTimeout>>;
-            clearTimeout(win._maganghubSearchTimeout);
-            win._maganghubSearchTimeout = setTimeout(() => handleSearch(val), 350);
+            if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+            searchTimerRef.current = setTimeout(() => handleSearch(val), 350);
           }}
         />
       </div>
@@ -116,6 +121,37 @@ export function MaganghubFilters() {
             <span>Reset</span>
           </Button>
         )}
+      </div>
+
+      {/* Divider */}
+      <div className="hidden lg:block w-px h-6 bg-border/80 shrink-0 mx-0.5" />
+
+      {/* View Switcher (Grid / Table) */}
+      <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/80 bg-muted/50 shrink-0 self-end lg:self-auto">
+        <Button
+          variant={viewMode === "grid" ? "secondary" : "ghost"}
+          size="sm"
+          className={cn(
+            "h-7.5 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            viewMode === "grid" && "bg-card text-foreground shadow-2xs font-bold"
+          )}
+          onClick={() => onViewChange("grid")}
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-violet-500" />
+          <span className="hidden sm:inline">Grid</span>
+        </Button>
+        <Button
+          variant={viewMode === "table" ? "secondary" : "ghost"}
+          size="sm"
+          className={cn(
+            "h-7.5 px-2.5 text-xs gap-1.5 rounded-lg transition-all",
+            viewMode === "table" && "bg-card text-foreground shadow-2xs font-bold"
+          )}
+          onClick={() => onViewChange("table")}
+        >
+          <TableProperties className="w-3.5 h-3.5 text-violet-500" />
+          <span className="hidden sm:inline">Tabel</span>
+        </Button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { JobListItem } from "@/features/jobs/types";
 import { JobFilters } from "./job-filters";
 import { JobCard } from "./job-card";
+import { JobTableRow } from "./job-table-row";
 import { KanbanBoard } from "./kanban-board";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { BriefcaseIcon, Plus } from "lucide-react";
@@ -25,7 +26,12 @@ export function JobsContainer({
   pageSize,
   hasSearchOrFilter,
 }: JobsContainerProps) {
-  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban" | "table">("grid");
+
+  const pagedJobs = jobs.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="space-y-5">
@@ -54,11 +60,53 @@ export function JobsContainer({
       ) : viewMode === "grid" ? (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs
-              .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-              .map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
+            {pagedJobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+          <PaginationBar
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+          />
+        </>
+      ) : viewMode === "table" ? (
+        <>
+          <div className="rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/80 bg-muted/40">
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Posisi / Perusahaan
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Lokasi
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Tempat Kerja
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Tipe
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Deadline
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground uppercase tracking-wide text-[10px] whitespace-nowrap">
+                      Dibuat
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedJobs.map((job) => (
+                    <JobTableRow key={job.id} job={job} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <PaginationBar
             currentPage={currentPage}
